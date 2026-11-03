@@ -14,10 +14,6 @@ test("dashboard works independently and saves a validated alert", async ({
     data: { question: "Germany" },
   });
   expect(response.status()).toBe(404);
-  await page.screenshot({
-    path: "test-results/dashboard-executive.png",
-    fullPage: true,
-  });
   await page.getByRole("button", { name: "Analyst deep-dive" }).click();
   await page.getByRole("button", { name: /^Germany:/ }).click();
   await page

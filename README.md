@@ -27,7 +27,7 @@ Charts provide numeric tables, keyboard navigation, non-color signals, and reduc
 
 Shared tokens are in `src/app/console.css`; dashboard styles are in `src/app/dashboard.css`. Recharts is used for time-series/radar, bundled Natural Earth outlines for the map, and an HTML table for the heat map. No global state manager or external backend is needed.
 
-Review this branch against `feat/initial`. See [the task boundaries](docs/TASKS.md). Screenshots are under `docs/screenshots`. Hosting and observability are not configured; deploy to a Node.js-capable Next.js host and measure production performance before real users.
+Review this branch against `feat/initial`. See [the task boundaries](docs/TASKS.md). Hosting and observability are not configured; deploy to a Node.js-capable Next.js host and measure production performance before real users.
 
 Tremor Raw retains its license in `licenses/Tremor-LICENSE`; Natural Earth boundaries are public domain. Before submitting, add your own reasoning and account of AI assistance.
 
