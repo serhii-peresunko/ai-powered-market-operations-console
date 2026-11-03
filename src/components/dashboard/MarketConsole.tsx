@@ -37,7 +37,7 @@ export function MarketConsole({ data }: { data: Dataset }) {
     </aside>
     <main id="dashboard" className="dashboard-main">
       <div className="topbar"><nav aria-label="Drill path" className="breadcrumbs"><button onClick={() => update({ region: undefined, market: undefined, product: undefined })}>Portfolio</button>{scope.region && <><span>/</span><button onClick={() => update({ market: undefined, product: undefined })}>{data.regions.find((r) => r.id === scope.region)?.name}</button></>}{scope.market && <><span>/</span><button onClick={() => update({ product: undefined })}>{data.markets.find((m) => m.id === scope.market)?.name}</button></>}{scope.product && <><span>/</span><strong>{scopeName(data, scope)}</strong></>}</nav><span className="source-pill"><span aria-hidden="true">●</span> Canonical dataset</span></div>
-      <header className="page-heading"><div><p className="eyebrow">YOUR PORTFOLIO, IN FOCUS</p><h1>{scopeName(data, scope)} overview</h1><p className="secondary-text">The signals that matter. The context to act.</p></div><div className="period-stamp"><span>REPORTING PERIOD</span><strong>{periodLabel(period)}</strong></div></header>
+      <header className="page-heading"><div><p className="eyebrow">YOUR PORTFOLIO, IN FOCUS</p><h1 id="dashboard-heading" tabIndex={-1}>{scopeName(data, scope)} overview</h1><p className="secondary-text">The signals that matter. The context to act.</p></div><div className="period-stamp"><span>REPORTING PERIOD</span><strong>{periodLabel(period)}</strong></div></header>
       <div className="source-note"><span className="source-dot" aria-hidden="true" />Source data · {periodLabel(period)} · All revenue in {data.meta.currency}<span className="source-note-end">Synthetic assignment dataset</span></div>
       <ViewControls data={data} view={scope} update={update} />
       <section className="kpi-grid" aria-label="Portfolio health">
@@ -52,6 +52,6 @@ export function MarketConsole({ data }: { data: Dataset }) {
       </div>
       <footer className="dashboard-footer">Source of truth: canonical dataset <span>Generated {data.meta.generatedAt}</span></footer>
     </main>
-    <Assistant />
+    <Assistant data={data} view={scope} onNavigate={(target) => { update(target); requestAnimationFrame(() => { document.getElementById("dashboard-heading")?.focus(); document.getElementById("dashboard")?.scrollIntoView({ block: "start" }); }); }} />
   </div>;
 }
