@@ -37,6 +37,13 @@ describe("metrics", () => {
     expect(summarize([])).toMatchObject({ actual: 0, growth: null, attainment: null });
   });
 
+  it("applies source status filters consistently to facts and totals", () => {
+    const rows = seriesInScope(data, { status: "off_track" });
+    expect(new Set(rows.map((row) => row.marketId))).toEqual(new Set(["de", "es"]));
+    expect(metricsFor(data, { status: "off_track" }, "2026-05").actual).toBe(
+      metricsFor(data, { market: "de" }, "2026-05").actual + metricsFor(data, { market: "es" }, "2026-05").actual);
+  });
+
   it("filters all hierarchy levels and produces one point per month", () => {
     const rows = seriesInScope(data, { region: "eu", market: "de", product: "veltrix" });
     expect(rows).toHaveLength(24);
