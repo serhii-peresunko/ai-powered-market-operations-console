@@ -127,9 +127,7 @@ AI output is not treated as authoritative for business calculations, evidence, o
 
 With more time: a screen-reader usability pass, tighter production performance measurements, contextual fixture responses, and deployed observability would come first. Live mode, virtualization, command palette, and Storybook remain optional.
 
-## Screenshots and attribution
-
-Screenshots are under [docs/screenshots](docs/screenshots). The browser tests regenerate captures in ignored `test-results/`.
+## Attribution
 
 Tremor Raw components retain their Apache-2.0 license in `licenses/Tremor-LICENSE`. Map geometry is public-domain [Natural Earth](https://www.naturalearthdata.com/about/terms-of-use/) data, converted once to SVG paths by `scripts/build-map.py` using the upstream [110m country boundaries](https://github.com/nvkelso/natural-earth-vector/blob/master/geojson/ne_110m_admin_0_countries.geojson).
 

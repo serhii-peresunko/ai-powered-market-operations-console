@@ -7,10 +7,6 @@ test("dashboard works independently and saves a validated alert", async ({
   await expect(
     page.getByRole("heading", { name: "Portfolio overview" }),
   ).toBeVisible();
-  await page.screenshot({
-    path: "test-results/dashboard-executive.png",
-    fullPage: true,
-  });
   await page.getByRole("button", { name: "Analyst deep-dive" }).click();
   await page.getByRole("button", { name: /^Germany:/ }).click();
   await page
