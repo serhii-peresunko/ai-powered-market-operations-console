@@ -1,4 +1,4 @@
-import { MarketConsole } from "@/components/dashboard/MarketConsole";
+import { ConsoleWithAssistant } from "@/components/chat/ConsoleWithAssistant";
 import { data } from "@/data";
 import { Suspense } from "react";
 
@@ -9,7 +9,7 @@ export default function Home() {
         <main className="loading-state">Loading market operations…</main>
       }
     >
-      <MarketConsole data={data} />
+      <ConsoleWithAssistant data={data} />
     </Suspense>
   );
 }

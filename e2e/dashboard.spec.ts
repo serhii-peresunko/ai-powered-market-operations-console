@@ -7,13 +7,6 @@ test("dashboard works independently and saves a validated alert", async ({
   await expect(
     page.getByRole("heading", { name: "Portfolio overview" }),
   ).toBeVisible();
-  await expect(
-    page.getByRole("heading", { name: "Market assistant" }),
-  ).toHaveCount(0);
-  const response = await page.request.post("/api/chat", {
-    data: { question: "Germany" },
-  });
-  expect(response.status()).toBe(404);
   await page.screenshot({
     path: "test-results/dashboard-executive.png",
     fullPage: true,
