@@ -3,12 +3,14 @@
 import {
   RiBarChartBoxLine,
   RiDashboardLine,
+  RiSparklingLine,
   RiGlobalLine,
   RiArrowRightUpLine,
 } from "@remixicon/react";
 import { Card } from "@/components/Card";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { Assistant } from "@/components/chat/Assistant";
 import type { Dataset } from "@/data/types";
 import { StatusBadge } from "./StatusBadge";
 import { MarketTable } from "./MarketTable";
@@ -81,7 +83,7 @@ export function MarketConsole({ data }: { data: Dataset }) {
     .slice(0, 4);
 
   return (
-    <div className="workspace">
+    <div className="workspace with-assistant">
       <a href="#dashboard" className="skip-link">
         Skip to dashboard
       </a>
@@ -112,7 +114,10 @@ export function MarketConsole({ data }: { data: Dataset }) {
             {data.markets.length}
           </span>
         </a>
-
+        <a href="#assistant" title="Assistant" className="nav-link">
+          <RiSparklingLine size={19} aria-hidden="true" />
+          <span>Assistant</span>
+        </a>
         <div className="nav-footer">
           <span className="avatar">MO</span>
           <div>
@@ -368,6 +373,13 @@ export function MarketConsole({ data }: { data: Dataset }) {
                 </div>
               ))}
             </div>
+            <div className="insight-note">
+              <RiSparklingLine size={17} aria-hidden="true" />
+              <span>
+                Have a question about a market? Explore the evidence with the
+                assistant.
+              </span>
+            </div>
           </Card>
         </div>
         <AlertConfigurator data={data} period={period} />
@@ -376,6 +388,19 @@ export function MarketConsole({ data }: { data: Dataset }) {
           <span>Generated {data.meta.generatedAt}</span>
         </footer>
       </main>
+      <Assistant
+        data={data}
+        view={scope}
+        onNavigate={(target) => {
+          update(target);
+          requestAnimationFrame(() => {
+            document.getElementById("dashboard-heading")?.focus();
+            document
+              .getElementById("dashboard")
+              ?.scrollIntoView({ block: "start" });
+          });
+        }}
+      />
     </div>
   );
 }
