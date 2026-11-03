@@ -37,7 +37,12 @@ export interface SeriesRow {
 }
 
 export interface Dataset {
-  meta: { currency: string; periods: string[]; latestPeriod: string; generatedAt: string };
+  meta: {
+    currency: string;
+    periods: string[];
+    latestPeriod: string;
+    generatedAt: string;
+  };
   regions: { id: string; name: string }[];
   products: { id: string; name: string }[];
   markets: Market[];
@@ -54,7 +59,12 @@ export interface Fixture {
 
 export type ChatEvent =
   | { type: "token"; value: string }
-  | { type: "done"; kind: AnswerKind; citations: Citation[]; confidence: Confidence }
+  | {
+      type: "done";
+      kind: AnswerKind;
+      citations: Citation[];
+      confidence: Confidence;
+    }
   | { type: "error"; message: string };
 
 export function isStatus(value: unknown): value is Status {
@@ -66,5 +76,10 @@ export function isConfidence(value: unknown): value is Confidence {
 }
 
 export function isAnswerKind(value: unknown): value is AnswerKind {
-  return value === "normal" || value === "low_confidence" || value === "abstain" || value === "error";
+  return (
+    value === "normal" ||
+    value === "low_confidence" ||
+    value === "abstain" ||
+    value === "error"
+  );
 }
