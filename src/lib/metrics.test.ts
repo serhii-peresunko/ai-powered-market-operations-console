@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { data } from "../data";
 import {
   metricsFor,
+  marketMetricsFor,
   ratio,
   seriesInScope,
   summarize,
@@ -23,6 +24,17 @@ describe("source integrity", () => {
 });
 
 describe("metrics", () => {
+  it("projects market metrics with the same scope used by charts and tables", () => {
+    const rows = marketMetricsFor(
+      data,
+      { region: "eu", product: "veltrix", status: "off_track" },
+      "2026-03",
+    );
+    expect(rows.map(({ market }) => market.id)).toEqual(["de", "es"]);
+    expect(rows.find(({ market }) => market.id === "de")).toMatchObject(
+      metricsFor(data, { market: "de", product: "veltrix" }, "2026-03"),
+    );
+  });
   it("computes percentages from sums rather than averaging percentages", () => {
     const base = { marketId: "a", productId: "p", period: "2026-05", units: 1 };
     const result = summarize([

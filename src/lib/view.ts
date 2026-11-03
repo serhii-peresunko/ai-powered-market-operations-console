@@ -1,6 +1,7 @@
 import type { Dataset, Status } from "@/data/types";
 import { isStatus } from "@/data/types";
 import type { Scope } from "./metrics";
+import { comparisonEntities } from "./comparisons";
 
 export interface DashboardView extends Scope {
   period: string;
@@ -22,10 +23,9 @@ export function readView(
   const mapKpi = params.get("kpi");
   const status = params.get("status");
   const compare = params.get("compare");
-  const comparisonIds = [
-    ...data.markets.map((item) => `market:${item.id}`),
-    ...data.regions.map((item) => `region:${item.id}`),
-  ];
+  const comparisonIds = new Set(
+    comparisonEntities(data).map((item) => item.id),
+  );
   return {
     region: market?.regionId ?? region?.id,
     market: market?.id,
@@ -42,7 +42,7 @@ export function readView(
         ? ["region:eu", "region:apac"]
         : [
             ...new Set(
-              compare.split(",").filter((id) => comparisonIds.includes(id)),
+              compare.split(",").filter((id) => comparisonIds.has(id)),
             ),
           ].slice(0, 4),
   };

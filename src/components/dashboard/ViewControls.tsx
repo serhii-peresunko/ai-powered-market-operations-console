@@ -1,17 +1,9 @@
 "use client";
-import { isStatus, type Dataset } from "@/data/types";
-import type { DashboardView } from "@/lib/view";
+import type { DashboardProps } from "./types";
+import { isStatus } from "@/data/types";
 import { periodLabel } from "@/lib/format";
 
-export function ViewControls({
-  data,
-  view,
-  update,
-}: {
-  data: Dataset;
-  view: DashboardView;
-  update: (patch: Partial<DashboardView>) => void;
-}) {
+export function ViewControls({ data, view, update }: DashboardProps) {
   return (
     <div className="view-controls">
       <label>

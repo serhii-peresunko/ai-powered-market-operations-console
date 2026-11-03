@@ -9,7 +9,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Card } from "@/components/Card";
+import { Panel } from "@/components/Panel";
+import { DataTable } from "@/components/DataTable";
 import { ChartBoundary } from "./ChartBoundary";
 import type { Dataset } from "@/data/types";
 import type { DashboardView } from "@/lib/view";
@@ -27,22 +28,23 @@ export default function RevenueTrend({
 }) {
   const points = trendFor(data, view);
   return (
-    <Card
-      className="panel full-width"
-      role="region"
-      aria-labelledby="trend-title"
+    <Panel
+      id="trend"
+      title="Revenue trajectory"
+      eyebrow="PERFORMANCE OVER TIME"
+      className="full-width"
+      action={
+        <>
+          <span className="count-chip">24 months · {data.meta.currency}</span>
+        </>
+      }
+      description={
+        <>
+          {scopeName(data, view)} · Actual revenue against plan and the prior
+          year. Selected: {periodLabel(view.period)}.
+        </>
+      }
     >
-      <div className="panel-heading">
-        <div>
-          <p className="eyebrow">PERFORMANCE OVER TIME</p>
-          <h2 id="trend-title">Revenue trajectory</h2>
-        </div>
-        <span className="count-chip">24 months · {data.meta.currency}</span>
-      </div>
-      <p className="panel-description">
-        {scopeName(data, view)} · Actual revenue against plan and the prior
-        year. Selected: {periodLabel(view.period)}.
-      </p>
       <div className="chart-legend">
         <span>
           <i className="legend-actual" />
@@ -145,51 +147,43 @@ export default function RevenueTrend({
           </ResponsiveContainer>
         </div>
       </ChartBoundary>
-      <details className="data-alternative">
-        <summary>View revenue data table</summary>
-        <div
-          className="table-scroll"
-          tabIndex={0}
-          role="region"
-          aria-label="Revenue data table"
-        >
-          <table>
-            <caption>
-              {scopeName(data, view)} revenue in {data.meta.currency}. Select a
-              period to focus the dashboard.
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col">Period</th>
-                <th scope="col">Actual</th>
-                <th scope="col">Forecast</th>
-                <th scope="col">Prior year</th>
-              </tr>
-            </thead>
-            <tbody>
-              {points.map((point) => (
-                <tr
-                  key={point.period}
-                  aria-selected={point.period === view.period}
+      <DataTable
+        label="Revenue data table"
+        caption={
+          <>
+            {scopeName(data, view)} revenue in {data.meta.currency}. Select a
+            period to focus the dashboard.
+          </>
+        }
+        summary="View revenue data table"
+      >
+        <thead>
+          <tr>
+            <th scope="col">Period</th>
+            <th scope="col">Actual</th>
+            <th scope="col">Forecast</th>
+            <th scope="col">Prior year</th>
+          </tr>
+        </thead>
+        <tbody>
+          {points.map((point) => (
+            <tr key={point.period} aria-selected={point.period === view.period}>
+              <th scope="row">
+                <button
+                  className="table-link"
+                  onClick={() => onPeriod(point.period)}
                 >
-                  <th scope="row">
-                    <button
-                      className="table-link"
-                      onClick={() => onPeriod(point.period)}
-                    >
-                      {periodLabel(point.period)}
-                      {point.period === view.period ? " · Selected" : ""}
-                    </button>
-                  </th>
-                  <td>{money(point.actual, data.meta.currency, false)}</td>
-                  <td>{money(point.forecast, data.meta.currency, false)}</td>
-                  <td>{money(point.priorYear, data.meta.currency, false)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </details>
-    </Card>
+                  {periodLabel(point.period)}
+                  {point.period === view.period ? " · Selected" : ""}
+                </button>
+              </th>
+              <td>{money(point.actual, data.meta.currency, false)}</td>
+              <td>{money(point.forecast, data.meta.currency, false)}</td>
+              <td>{money(point.priorYear, data.meta.currency, false)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </DataTable>
+    </Panel>
   );
 }

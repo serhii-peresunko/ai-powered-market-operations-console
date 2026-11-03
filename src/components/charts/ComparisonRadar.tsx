@@ -1,4 +1,5 @@
 "use client";
+import type { DashboardProps } from "@/components/dashboard/types";
 import {
   PolarAngleAxis,
   PolarGrid,
@@ -7,101 +8,38 @@ import {
   RadarChart,
   ResponsiveContainer,
 } from "recharts";
-import { Card } from "@/components/Card";
+import { Panel } from "@/components/Panel";
+import { DataTable } from "@/components/DataTable";
 import { ChartBoundary } from "./ChartBoundary";
-import type { Dataset } from "@/data/types";
-import type { DashboardView } from "@/lib/view";
-import { metricsFor } from "@/lib/metrics";
+import { comparisonMetrics } from "@/lib/comparisons";
 import { money, percent, periodLabel } from "@/lib/format";
 
 const colors = ["#087f71", "#5268a4", "#a56b27", "#a74e77"];
-const clamp = (value: number) => Math.max(0, Math.min(100, value));
 
 export default function ComparisonRadar({
   data,
   view,
   update,
-}: {
-  data: Dataset;
-  view: DashboardView;
-  update: (patch: Partial<DashboardView>) => void;
-}) {
-  const options = [
-    ...data.regions.map((item) => ({
-      id: `region:${item.id}`,
-      name: item.name,
-    })),
-    ...data.markets.map((item) => ({
-      id: `market:${item.id}`,
-      name: item.name,
-    })),
-  ];
-  const selected = options
-    .filter((item) => view.compare.includes(item.id))
-    .map((item) => {
-      const [kind, id] = item.id.split(":");
-      return {
-        ...item,
-        ...metricsFor(
-          data,
-          {
-            ...(kind === "market" ? { market: id } : { region: id }),
-            product: view.product,
-          },
-          view.period,
-        ),
-      };
-    });
-  const portfolio = metricsFor(
-    data,
-    { product: view.product },
-    view.period,
-  ).actual;
-  const points = [
-    {
-      axis: "Revenue weight",
-      ...Object.fromEntries(
-        selected.map((item) => [
-          item.id,
-          portfolio === 0 ? null : (item.actual / portfolio) * 100,
-        ]),
-      ),
-    },
-    {
-      axis: "YoY growth",
-      ...Object.fromEntries(
-        selected.map((item) => [
-          item.id,
-          item.growth === null ? null : clamp((item.growth + 25) * 2),
-        ]),
-      ),
-    },
-    {
-      axis: "Attainment",
-      ...Object.fromEntries(
-        selected.map((item) => [
-          item.id,
-          item.attainment === null
-            ? null
-            : clamp((item.attainment / 120) * 100),
-        ]),
-      ),
-    },
-  ];
+}: DashboardProps) {
+  const { options, selected, points } = comparisonMetrics(data, view);
 
   return (
-    <Card className="panel" role="region" aria-labelledby="radar-title">
-      <div className="panel-heading">
-        <div>
-          <p className="eyebrow">SIDE BY SIDE</p>
-          <h2 id="radar-title">Performance comparison</h2>
-        </div>
-        <span className="count-chip">{periodLabel(view.period)}</span>
-      </div>
-      <p className="panel-description">
-        Compare up to four markets or regions. Product selection applies to
-        every comparison.
-      </p>
+    <Panel
+      id="radar"
+      title="Performance comparison"
+      eyebrow="SIDE BY SIDE"
+      action={
+        <>
+          <span className="count-chip">{periodLabel(view.period)}</span>
+        </>
+      }
+      description={
+        <>
+          Compare up to four markets or regions. Product selection applies to
+          every comparison.
+        </>
+      }
+    >
       <label className="comparison-picker">
         <span className="sr-only">Add comparison</span>
         <select
@@ -192,60 +130,43 @@ export default function ComparisonRadar({
           values. Unavailable values are omitted from interpretation.
         </p>
       </details>
-      <details className="data-alternative">
-        <summary>View comparison data table</summary>
-        <div
-          className="table-scroll"
-          tabIndex={0}
-          role="region"
-          aria-label="Comparison metrics"
-        >
-          <table>
-            <caption>
-              Exact source-derived values · {periodLabel(view.period)} ·{" "}
-              {data.meta.currency}. Use the comparison controls above to change
-              entities.
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col">Entity</th>
-                <th scope="col">Revenue</th>
-                <th scope="col">Growth</th>
-                <th scope="col">Attainment</th>
-              </tr>
-            </thead>
-            <tbody>
-              {selected.map((item) => (
-                <tr key={item.id}>
-                  <th scope="row">
-                    <button
-                      className="table-link"
-                      onClick={() => {
-                        const [kind, id] = item.id.split(":");
-                        update(
-                          kind === "market"
-                            ? {
-                                market: id,
-                                region: data.markets.find(
-                                  (market) => market.id === id,
-                                )?.regionId,
-                              }
-                            : { region: id, market: undefined },
-                        );
-                      }}
-                    >
-                      {item.name}
-                    </button>
-                  </th>
-                  <td>{money(item.actual, data.meta.currency, false)}</td>
-                  <td>{percent(item.growth, true)}</td>
-                  <td>{percent(item.attainment)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </details>
-    </Card>
+      <DataTable
+        label="Comparison metrics"
+        caption={
+          <>
+            Exact source-derived values · {periodLabel(view.period)} ·{" "}
+            {data.meta.currency}. Use the comparison controls above to change
+            entities.
+          </>
+        }
+        summary="View comparison data table"
+      >
+        <thead>
+          <tr>
+            <th scope="col">Entity</th>
+            <th scope="col">Revenue</th>
+            <th scope="col">Growth</th>
+            <th scope="col">Attainment</th>
+          </tr>
+        </thead>
+        <tbody>
+          {selected.map((item) => (
+            <tr key={item.id}>
+              <th scope="row">
+                <button
+                  className="table-link"
+                  onClick={() => update(item.scope)}
+                >
+                  {item.name}
+                </button>
+              </th>
+              <td>{money(item.actual, data.meta.currency, false)}</td>
+              <td>{percent(item.growth, true)}</td>
+              <td>{percent(item.attainment)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </DataTable>
+    </Panel>
   );
 }

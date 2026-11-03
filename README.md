@@ -30,3 +30,9 @@ Shared tokens are in `src/app/console.css`; dashboard styles are in `src/app/das
 Review this branch against `feat/initial`. See [the task boundaries](docs/TASKS.md). Screenshots are under `docs/screenshots`. Hosting and observability are not configured; deploy to a Node.js-capable Next.js host and measure production performance before real users.
 
 Tremor Raw retains its license in `licenses/Tremor-LICENSE`; Natural Earth boundaries are public domain. Before submitting, add your own reasoning and account of AI assistance.
+
+## Refactoring boundaries
+
+`MarketConsole` coordinates URL state and composes the workspace, header, summary, chart group, and priorities. `Panel` and `DataTable` own common presentation and accessibility markup. Market filtering and projections live in `metrics.ts`; comparison entity resolution and radar normalization live in `comparisons.ts`.
+
+`AlertForm` owns input and validation. `useAlertRules` owns persistence, pending state, optimistic updates, and rollback. `SavedAlerts` renders the saved rules. The assistant is composed through a view-aware slot, so dashboard modules do not import assistant implementation.

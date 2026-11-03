@@ -1,6 +1,11 @@
 import { z } from "zod";
 import type { Dataset } from "@/data/types";
-import { metricsFor } from "./metrics";
+import { marketMetricsFor } from "./metrics";
+
+export const alertThresholds = {
+  growth: { min: -100, max: 200 },
+  attainment: { min: 0, max: 200 },
+} as const;
 
 export function alertSchema(data: Dataset) {
   return z
@@ -36,22 +41,23 @@ export function alertSchema(data: Dataset) {
           path: ["targetId"],
           message: `Select a valid ${value.scope}.`,
         });
-      for (const [field, enabled, minimum] of [
-        ["growth", value.growthEnabled, -100],
-        ["attainment", value.attainmentEnabled, 0],
+      for (const [field, enabled] of [
+        ["growth", value.growthEnabled],
+        ["attainment", value.attainmentEnabled],
       ] as const) {
+        const { min, max } = alertThresholds[field];
         const number = Number(value[field]);
         if (
           enabled &&
           (!value[field].trim() ||
             !Number.isFinite(number) ||
-            number < minimum ||
-            number > 200)
+            number < min ||
+            number > max)
         )
           context.addIssue({
             code: "custom",
             path: [field],
-            message: `Enter a percentage from ${minimum} to 200.`,
+            message: `Enter a percentage from ${min} to ${max}.`,
           });
       }
     });
@@ -76,27 +82,29 @@ export function matchingMarkets(
   rule: AlertInput,
   period: string,
 ) {
-  return data.markets.filter((market) => {
-    if (rule.scope === "region" && market.regionId !== rule.targetId)
-      return false;
-    if (rule.scope === "market" && market.id !== rule.targetId) return false;
-    const metrics = metricsFor(data, { market: market.id }, period);
-    const matches = [
-      ...(rule.growthEnabled
-        ? [metrics.growth !== null && metrics.growth < Number(rule.growth)]
-        : []),
-      ...(rule.attainmentEnabled
-        ? [
-            metrics.attainment !== null &&
-              metrics.attainment < Number(rule.attainment),
-          ]
-        : []),
-    ];
-    return (
-      matches.length > 0 &&
-      (rule.match === "all" ? matches.every(Boolean) : matches.some(Boolean))
-    );
-  });
+  const scope = {
+    region: rule.scope === "region" ? rule.targetId : undefined,
+    market: rule.scope === "market" ? rule.targetId : undefined,
+  };
+  return marketMetricsFor(data, scope, period)
+    .filter((metrics) => {
+      const matches = [
+        ...(rule.growthEnabled
+          ? [metrics.growth !== null && metrics.growth < Number(rule.growth)]
+          : []),
+        ...(rule.attainmentEnabled
+          ? [
+              metrics.attainment !== null &&
+                metrics.attainment < Number(rule.attainment),
+            ]
+          : []),
+      ];
+      return (
+        matches.length > 0 &&
+        (rule.match === "all" ? matches.every(Boolean) : matches.some(Boolean))
+      );
+    })
+    .map(({ market }) => market);
 }
 
 export function readAlerts(data: Dataset): AlertRule[] {
