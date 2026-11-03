@@ -1,14 +1,16 @@
-import type { Dataset, SeriesRow } from "../data/types";
+import type { Dataset, SeriesRow, Status } from "../data/types";
 
 export interface Scope {
   region?: string;
   market?: string;
   product?: string;
+  status?: "all" | Status;
 }
 
 export function marketsInScope(data: Dataset, scope: Scope) {
   return data.markets.filter((market) =>
-    (!scope.region || market.regionId === scope.region) && (!scope.market || market.id === scope.market));
+    (!scope.region || market.regionId === scope.region) && (!scope.market || market.id === scope.market) &&
+    (!scope.status || scope.status === "all" || market.kpis.status === scope.status));
 }
 
 export function seriesInScope(data: Dataset, scope: Scope): SeriesRow[] {
