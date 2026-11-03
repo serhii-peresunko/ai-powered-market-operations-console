@@ -3,6 +3,7 @@
 import { RiBarChartBoxLine, RiDashboardLine, RiSparklingLine, RiGlobalLine, RiArrowRightUpLine } from "@remixicon/react";
 import { Card } from "@/components/Card";
 import Link from "next/link";
+import { Assistant } from "@/components/chat/Assistant";
 import type { Dataset, Status } from "@/data/types";
 import { marketsInScope, metricsFor, scopeName } from "@/lib/metrics";
 import { money, percent, periodLabel } from "@/lib/format";
@@ -51,6 +52,6 @@ export function MarketConsole({ data }: { data: Dataset }) {
       </div>
       <footer className="dashboard-footer">Source of truth: canonical dataset <span>Generated {data.meta.generatedAt}</span></footer>
     </main>
-    <aside id="assistant" className="assistant-panel" aria-labelledby="assistant-title"><header className="assistant-heading"><span className="assistant-symbol"><RiSparklingLine size={21} aria-hidden="true" /></span><div><h2 id="assistant-title">Market assistant</h2><p>AI-generated interpretation</p></div><span className="demo-badge">DEMO</span></header><div className="assistant-empty"><span className="welcome-symbol"><RiSparklingLine size={30} aria-hidden="true" /></span><h3>From numbers<br />to understanding.</h3><p>Ask a question about your portfolio.<br />Follow the evidence behind every answer.</p></div><div className="assistant-footnote">Fixture-based assistant · No live model</div></aside>
+    <Assistant />
   </div>;
 }
