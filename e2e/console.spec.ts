@@ -7,10 +7,6 @@ test("dashboard → streamed answer → source citation → saved alert", async 
   await expect(
     page.getByRole("heading", { name: "Portfolio overview" }),
   ).toBeVisible();
-  await page.screenshot({
-    path: "test-results/executive-desktop.png",
-    fullPage: true,
-  });
   await page.getByRole("button", { name: "Analyst deep-dive" }).click();
   await page.getByRole("button", { name: /^Germany:/ }).click();
   await expect(page).toHaveURL(/market=de/);
@@ -42,10 +38,6 @@ test("dashboard → streamed answer → source citation → saved alert", async 
   await expect(
     page.getByRole("combobox", { name: "Product", exact: true }),
   ).toHaveValue("veltrix");
-  await page.screenshot({
-    path: "test-results/cited-answer.png",
-    fullPage: true,
-  });
 
   const alerts = page.getByRole("region", { name: "Alert thresholds" });
   await alerts.getByText("Configure an alert", { exact: true }).click();

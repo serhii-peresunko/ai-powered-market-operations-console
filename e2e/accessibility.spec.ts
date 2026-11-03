@@ -12,10 +12,6 @@ test("analyst view has no automated WCAG A/AA violations", async ({ page }) => {
     page.getByRole("heading", { name: "Market performance", exact: true }),
   ).toBeVisible();
   await expect(page.locator(".recharts-surface").first()).toBeVisible();
-  await page.screenshot({
-    path: "test-results/analyst-desktop.png",
-    fullPage: true,
-  });
   const results = await new AxeBuilder({ page })
     .exclude("nextjs-portal")
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
@@ -48,8 +44,4 @@ test("mobile layout contains tables without overflowing the page", async ({
     viewport: window.innerWidth,
   }));
   expect(dimensions.content).toBeLessThanOrEqual(dimensions.viewport);
-  await page.screenshot({
-    path: "test-results/analyst-mobile.png",
-    fullPage: true,
-  });
 });
