@@ -9,13 +9,23 @@ export async function POST(req: Request) {
   } catch {
     return Response.json({ error: "Send a JSON question." }, { status: 400 });
   }
-  if (!body || typeof body !== "object" || !("question" in body) ||
-      typeof body.question !== "string" || !body.question.trim() || body.question.length > 1000) {
-    return Response.json({ error: "Question must contain 1–1000 characters." }, { status: 400 });
+  if (
+    !body ||
+    typeof body !== "object" ||
+    !("question" in body) ||
+    typeof body.question !== "string" ||
+    !body.question.trim() ||
+    body.question.length > 1000
+  ) {
+    return Response.json(
+      { error: "Question must contain 1–1000 characters." },
+      { status: 400 },
+    );
   }
   const fixture = pickFixture(body.question.trim());
   const encoder = new TextEncoder();
-  const encode = (event: ChatEvent) => encoder.encode(`data: ${JSON.stringify(event)}\n\n`);
+  const encode = (event: ChatEvent) =>
+    encoder.encode(`data: ${JSON.stringify(event)}\n\n`);
   const tokens = fixture.answer.text.match(/\S+\s*/g) ?? [];
   let index = 0;
   let cancelled = false;
@@ -23,25 +33,49 @@ export async function POST(req: Request) {
   const stream = new ReadableStream<Uint8Array>({
     async pull(controller) {
       if (cancelled) return;
-      if (req.signal.aborted) { controller.close(); return; }
+      if (req.signal.aborted) {
+        controller.close();
+        return;
+      }
       if (fixture.kind === "error") {
-        controller.enqueue(encode({ type: "error", message: fixture.error ?? "Something went wrong." }));
+        controller.enqueue(
+          encode({
+            type: "error",
+            message: fixture.error ?? "Something went wrong.",
+          }),
+        );
         controller.close();
         return;
       }
       if (index < tokens.length) {
         await new Promise((resolve) => setTimeout(resolve, 35));
         if (cancelled) return;
-        if (req.signal.aborted) { controller.close(); return; }
+        if (req.signal.aborted) {
+          controller.close();
+          return;
+        }
         controller.enqueue(encode({ type: "token", value: tokens[index++] }));
       } else {
-        controller.enqueue(encode({ type: "done", kind: fixture.kind, citations: fixture.answer.citations, confidence: fixture.answer.confidence }));
+        controller.enqueue(
+          encode({
+            type: "done",
+            kind: fixture.kind,
+            citations: fixture.answer.citations,
+            confidence: fixture.answer.confidence,
+          }),
+        );
         controller.close();
       }
     },
-    cancel() { cancelled = true; },
+    cancel() {
+      cancelled = true;
+    },
   });
   return new Response(stream, {
-    headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache, no-transform", "X-Accel-Buffering": "no" },
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache, no-transform",
+      "X-Accel-Buffering": "no",
+    },
   });
 }
