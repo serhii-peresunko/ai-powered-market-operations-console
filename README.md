@@ -29,7 +29,7 @@ Shared tokens are in `src/app/console.css`; dashboard styles are in `src/app/das
 
 Review this branch against `feat/initial`. See [the task boundaries](docs/TASKS.md). Hosting and observability are not configured; deploy to a Node.js-capable Next.js host and measure production performance before real users.
 
-Tremor Raw retains its license in `licenses/Tremor-LICENSE`; Natural Earth boundaries are public domain. Before submitting, add your own reasoning and account of AI assistance.
+Natural Earth boundaries are public domain. Before submitting, add your own reasoning and account of AI assistance.
 
 ## Refactoring boundaries
 
