@@ -2,27 +2,6 @@
 
 This pack contains the data and a fake backend for the Market Operations console assignment, so you can spend your time on the front-end rather than on plumbing.
 
-## UI setup
-
-The app uses [Tremor Raw](https://www.tremor.so/docs/getting-started/installation/next)
-with Tailwind CSS 4. Components live in this repository and can be customized directly.
-
-```tsx
-import { Button } from "@/components/Button";
-import { Card } from "@/components/Card";
-```
-
-Shared class-name and focus utilities are in `src/lib/utils.ts`. Tailwind Forms,
-class-based dark mode (`.dark` on `<html>`), and Tremor animations are configured
-in `src/app/globals.css`. Geist is configured through `next/font` in the root layout.
-Add further components from the Tremor documentation and install their listed
-dependencies as needed.
-
-`Button` and `Card` were copied from the official
-[Tremor repository](https://github.com/tremorlabs/tremor), with local import paths
-and Next.js client boundaries added. They are distributed under Apache-2.0;
-see `licenses/Tremor-LICENSE`.
-
 ## What's inside
 
 | File | What it is |
