@@ -14,6 +14,7 @@ import { ViewControls } from "./ViewControls";
 const RevenueTrend = dynamic(() => import("@/components/charts/RevenueTrend"), { ssr: false, loading: () => <div className="chart-loading" role="status">Loading revenue chart…</div> });
 const MarketMap = dynamic(() => import("@/components/charts/MarketMap"), { ssr: false, loading: () => <div className="chart-loading" role="status">Loading country map…</div> });
 const ComparisonRadar = dynamic(() => import("@/components/charts/ComparisonRadar"), { ssr: false, loading: () => <div className="chart-loading" role="status">Loading comparison chart…</div> });
+const PerformanceHeatmap = dynamic(() => import("@/components/charts/PerformanceHeatmap"), { ssr: false, loading: () => <div className="chart-loading" role="status">Loading heat map…</div> });
 
 export const statusLabels: Record<Status, string> = { on_track: "On track", at_risk: "At risk", off_track: "Off track" };
 
@@ -55,6 +56,7 @@ export function MarketConsole({ data }: { data: Dataset }) {
         <RevenueTrend data={data} view={scope} onPeriod={(period) => update({ period })} />
         <MarketMap data={data} view={scope} update={update} />
         <ComparisonRadar data={data} view={scope} update={update} />
+        <PerformanceHeatmap data={data} view={scope} update={update} />
         <Card id="market-detail" className="panel"><div className="panel-heading"><div><p className="eyebrow">PRIORITIZE</p><h2>Markets to watch</h2></div><span className="count-chip">{risks.length} markets</span></div><p className="panel-description">Latest source flags, including off-track markets.</p><div className="risk-list">{risks.map((market) => <div key={market.id} className="risk-row"><span className="country-code">{market.iso2}</span><button className="risk-name" onClick={() => update({ region: market.regionId, market: market.id, product: undefined })} aria-label={`View ${market.name}`}><strong>{market.name}</strong><span>{data.regions.find((region) => region.id === market.regionId)?.name}</span></button><StatusBadge status={market.kpis.status} /></div>)}</div></Card>
         <Card className="panel"><div className="panel-heading"><div><p className="eyebrow">WHAT MOVED THE NEEDLE</p><h2>Largest forecast gaps</h2></div><RiArrowRightUpLine size={20} aria-hidden="true" /></div><p className="panel-description">Ranked by absolute revenue variance from plan.</p><div className="movers-list">{movers.map(({ market, gap, attainment }) => <div key={market.id} className="mover-row"><button className="market-link" onClick={() => update({ region: market.regionId, market: market.id, product: undefined })}><strong>{market.name}</strong><span>{percent(attainment)} of forecast</span></button><strong className={gap >= 0 ? "positive" : "negative"}>{gap > 0 ? "+" : ""}{money(gap, data.meta.currency)}</strong></div>)}</div><div className="insight-note"><RiSparklingLine size={17} aria-hidden="true" /><span>Have a question about a market? Explore the evidence with the assistant.</span></div></Card>
       </div>
