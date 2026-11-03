@@ -61,7 +61,7 @@ URL state owns region, market, product, period, audience mode, map metric, compa
 
 Conversation turns, composer input, table sort, heat-map keyboard focus, and unsaved form values are local React state. Alerts persist only in this browser. There is no shared persistence or notification delivery.
 
-Feature components live under `src/components/`; calculations, URL parsing, streaming, and alert rules live under `src/lib/`. There are no generic repositories, service containers, global stores, or chart frameworks layered over the libraries.
+Shared styling is in `src/app/console.css`; dashboard and assistant styles are isolated in `dashboard.css` and `assistant.css`. Feature components live under `src/components/`; calculations, URL parsing, streaming, and alert rules live under `src/lib/`. There are no generic repositories, service containers, global stores, or chart frameworks layered over the libraries.
 
 ## Data accuracy and trust
 
@@ -105,7 +105,7 @@ Automated axe checks cover WCAG 2.1 A/AA rules on the analyst view. Mobile overf
 
 The checks use behavioral assertions rather than snapshot collections or tests of chart-library internals. Strict typing, runtime event validation, safe plain-text rendering, shared metric calculations, feature boundaries, and focused branches are the main standards. Storybook, table virtualization, exhaustive browser matrices, and a real backend were deliberately deferred.
 
-Work is grouped into three branches: `feat/initial`, `feat/dashboard`, and `feat/assistant`. Original commits and merge history are preserved in `dev`. See [the task ledger](docs/TASKS.md).
+The three branches have feature-specific changes: `feat/initial` is the shared foundation, `feat/dashboard` adds only dashboard features, and `feat/assistant` adds chat and its integration. Review dashboard against initial, and assistant against dashboard. Previous history is preserved in `dev`. See [the task ledger](docs/TASKS.md).
 
 ## Production path
 

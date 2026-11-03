@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { data } from "../data";
-import { fallback, fixtures } from "../data/fixtures";
 import {
   metricsFor,
   ratio,
@@ -10,7 +9,7 @@ import {
 } from "./metrics";
 
 describe("source integrity", () => {
-  it("resolves all fact and citation references", () => {
+  it("resolves all fact references", () => {
     for (const row of data.series) {
       expect(data.markets.some((market) => market.id === row.marketId)).toBe(
         true,
@@ -20,23 +19,6 @@ describe("source integrity", () => {
       ).toBe(true);
       expect(data.meta.periods).toContain(row.period);
     }
-    for (const fixture of [fallback, ...fixtures])
-      for (const citation of fixture.answer.citations) {
-        if (citation.marketId)
-          expect(
-            data.markets.some((market) => market.id === citation.marketId),
-          ).toBe(true);
-        if (citation.regionId)
-          expect(
-            data.regions.some((region) => region.id === citation.regionId),
-          ).toBe(true);
-        if (citation.productId)
-          expect(
-            data.products.some((product) => product.id === citation.productId),
-          ).toBe(true);
-        if (citation.period)
-          expect(data.meta.periods).toContain(citation.period);
-      }
   });
 });
 

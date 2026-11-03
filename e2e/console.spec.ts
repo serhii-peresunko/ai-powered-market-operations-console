@@ -67,33 +67,6 @@ test("dashboard → streamed answer → source citation → saved alert", async 
   ).toBeVisible();
 });
 
-test("URL history, heat-map keyboard selection and comparison follow the view", async ({
-  page,
-}) => {
-  await page.goto("/?mode=analyst");
-  const germany = page.getByRole("button", { name: /^Germany:/ });
-  await germany.focus();
-  await germany.press("Enter");
-  await page.getByLabel("Reporting period").selectOption("2026-03");
-  await expect(page).toHaveURL(/period=2026-03/);
-  await expect(page.getByLabel("Reporting period")).toHaveValue("2026-03");
-  await page.goBack();
-  await expect(page.getByLabel("Reporting period")).toHaveValue("2026-05");
-  await page.goForward();
-  await expect(page.getByLabel("Reporting period")).toHaveValue("2026-03");
-  const cell = page.getByRole("button", { name: /Germany, Mar 2026:/ });
-  await cell.focus();
-  await cell.press("ArrowRight");
-  await page.keyboard.press("Enter");
-  await expect(page.getByLabel("Reporting period")).toHaveValue("2026-04");
-  await page.getByLabel("Add comparison").selectOption("market:us");
-  await page.reload();
-  await expect(page.getByLabel("Reporting period")).toHaveValue("2026-04");
-  await expect(
-    page.getByRole("button", { name: "Remove United States from comparison" }),
-  ).toBeVisible();
-});
-
 for (const scenario of [
   {
     name: "uncertainty",

@@ -83,7 +83,7 @@ export function MarketConsole({ data }: { data: Dataset }) {
     .slice(0, 4);
 
   return (
-    <div className="workspace">
+    <div className="workspace with-assistant">
       <a href="#dashboard" className="skip-link">
         Skip to dashboard
       </a>

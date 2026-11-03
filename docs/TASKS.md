@@ -1,15 +1,11 @@
-# Tasks and branches
+# Tasks and branch boundaries
 
-Integration branch: `dev`. Work is grouped into three tasks:
+| Branch           | Base             | Own changes                                                                                                               |
+| ---------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `feat/initial`   | Starter commit   | Framework setup, shared components and tokens, canonical data and contracts, metric helpers, unit-test setup, and base CI |
+| `feat/dashboard` | `feat/initial`   | Dashboard UI, charts, drill-down, URL state, audience modes, alerts, and dashboard tests                                  |
+| `feat/assistant` | `feat/dashboard` | Streaming endpoint/client, chat UI, confidence, citations, dashboard integration, and assistant tests                     |
 
-| Task      | Branch           | Includes                                                                                              |
-| --------- | ---------------- | ----------------------------------------------------------------------------------------------------- |
-| Initial   | `feat/initial`   | Project setup, starter data, types, shared components, styling tokens, metric helpers, and test setup |
-| Dashboard | `feat/dashboard` | Metrics, four charts, drill-down, URL state, audience modes, and alert configuration                  |
-| Assistant | `feat/assistant` | Streaming chat, stop/retry, citations, confidence, and dashboard integration                          |
+The branches are stacked. Review the dashboard against initial, and the assistant against dashboard. The dashboard branch contains no chat components, streaming client, or active chat endpoint. Shared data and event contracts belong to initial.
 
-Accessibility, tests, CI, screenshots, and documentation belong to the relevant task; there is no separate finishing task.
-
-The original commits and merge history are preserved. These branches are cumulative checkpoints of the existing implementation. The complete verified application is on `dev` and `feat/assistant`.
-
-Deployment remains an external handoff: connect the repository to a Next.js-capable host. No hosting account is configured, no remote Git branches have been pushed, and no live URL is claimed. Review the README in your own words before submitting. A video walkthrough is optional and has not been recorded.
+`dev` remains the integration branch. Existing history is retained there while the feature branches are rebuilt with these boundaries. Deployment requires a connected hosting account; no live deployment is configured.
