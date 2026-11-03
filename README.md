@@ -1,10 +1,12 @@
-# Market Operations Console — Initial
+# Market Operations Console — Dashboard
 
-Shared project foundation: Next.js, React, strict TypeScript, Tailwind, Tremor components, canonical data and typed contracts, formatting and metric helpers, and Vitest/Testing Library setup.
+This branch adds dashboard logic on top of `feat/initial`: portfolio metrics, source-status risks, revenue trends, an offline country map, radar comparisons, a forecast heat map, URL-backed drill-down, executive/analyst modes, and validated local alerts.
 
-## Run
+It contains no chat UI, streaming client, fixture matcher, or active `/api/chat` endpoint. The assistant is added by `feat/assistant`.
 
-Use Node.js 24. No environment variables or API keys are required.
+## Run and verify
+
+Use Node.js 24. No application secrets or map account are needed.
 
 ```sh
 npm ci
@@ -13,8 +15,18 @@ npm test
 npm run typecheck
 npm run lint
 npm run build
+npx playwright install chromium
+CI=true npm run test:e2e
 ```
 
-The initial branch renders a setup screen. Dashboard features and the active assistant are added on their own branches. The supplied data and fixtures are included as source assets; there is no active chat endpoint here.
+The browser tests start the production server on port 3010. CI runs the same checks. Source data is loaded by the server page; URL parameters own the shared view, and form/sort state is local React state. Alerts save to localStorage through a deterministic async mock with optimistic rollback. The failure toggle lets reviewers exercise that behavior.
 
-Branches build on each other: `feat/initial` → `feat/dashboard` → `feat/assistant`. See [the task boundaries](docs/TASKS.md).
+Percentages are calculated from summed fact rows. Zero denominators are unavailable. Source status and market share are latest-period attributes; historical status and product/region market share are not invented. Amounts are USD, formatted with `Intl`.
+
+Charts provide numeric tables, keyboard navigation, non-color signals, and reduced-motion support. Recharts rendering failures preserve the accessible alternative. Automated axe and narrow-layout checks are included; a dedicated screen-reader audit remains future work.
+
+Shared tokens are in `src/app/console.css`; dashboard styles are in `src/app/dashboard.css`. Recharts is used for time-series/radar, bundled Natural Earth outlines for the map, and an HTML table for the heat map. No global state manager or external backend is needed.
+
+Review this branch against `feat/initial`. See [the task boundaries](docs/TASKS.md). Screenshots are under `docs/screenshots`. Hosting and observability are not configured; deploy to a Node.js-capable Next.js host and measure production performance before real users.
+
+Tremor Raw retains its license in `licenses/Tremor-LICENSE`; Natural Earth boundaries are public domain. Before submitting, add your own reasoning and account of AI assistance.

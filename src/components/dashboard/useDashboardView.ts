@@ -1,0 +1,14 @@
+"use client";
+import { useSearchParams } from "next/navigation";
+import type { Dataset } from "@/data/types";
+import { readView, viewParams, type DashboardView } from "@/lib/view";
+
+export function useDashboardView(data: Dataset) {
+  const params = useSearchParams();
+  const view = readView(params, data);
+  function update(patch: Partial<DashboardView>) {
+    const next = readView(viewParams({ ...view, ...patch }), data);
+    window.history.pushState(null, "", `?${viewParams(next)}`);
+  }
+  return { view, update };
+}

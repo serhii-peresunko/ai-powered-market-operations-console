@@ -1,18 +1,15 @@
-import { Card } from "@/components/Card";
+import { MarketConsole } from "@/components/dashboard/MarketConsole";
+import { data } from "@/data";
+import { Suspense } from "react";
 
 export default function Home() {
   return (
-    <main className="recovery-page">
-      <p className="eyebrow">MARKET OPERATIONS</p>
-      <h1>Market operations console</h1>
-      <p>A workspace for understanding portfolio performance across markets.</p>
-      <Card>
-        <h2>Workspace ready</h2>
-        <p>
-          Shared components, data contracts, formatting, and test setup are in
-          place.
-        </p>
-      </Card>
-    </main>
+    <Suspense
+      fallback={
+        <main className="loading-state">Loading market operations…</main>
+      }
+    >
+      <MarketConsole data={data} />
+    </Suspense>
   );
 }
