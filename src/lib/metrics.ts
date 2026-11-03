@@ -56,6 +56,15 @@ export function metricsFor(data: Dataset, scope: Scope, period: string) {
   );
 }
 
+export type Metrics = ReturnType<typeof summarize>;
+
+export function marketMetricsFor(data: Dataset, scope: Scope, period: string) {
+  return marketsInScope(data, scope).map((market) => ({
+    market,
+    ...metricsFor(data, { market: market.id, product: scope.product }, period),
+  }));
+}
+
 export function trendFor(data: Dataset, scope: Scope) {
   const rows = seriesInScope(data, scope);
   return data.meta.periods.map((period) => ({

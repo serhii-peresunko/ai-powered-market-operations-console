@@ -5,6 +5,28 @@ import {
   type Citation,
 } from "@/data/types";
 
+export const MAX_QUESTION_LENGTH = 1000;
+
+export async function streamChat(
+  question: string,
+  signal: AbortSignal,
+  onEvent: (event: ChatEvent) => void,
+) {
+  const response = await fetch("/api/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ question }),
+    signal,
+  });
+  if (
+    !response.ok ||
+    !response.body ||
+    !response.headers.get("content-type")?.includes("text/event-stream")
+  )
+    throw new Error("Unable to start the response. Please retry.");
+  await consumeChat(response.body, onEvent);
+}
+
 function isCitation(value: unknown): value is Citation {
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
   return ["marketId", "regionId", "productId", "period", "label"].every(

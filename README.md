@@ -132,3 +132,9 @@ With more time: a screen-reader usability pass, tighter production performance m
 Screenshots are under [docs/screenshots](docs/screenshots). The browser tests regenerate captures in ignored `test-results/`.
 
 Tremor Raw components retain their Apache-2.0 license in `licenses/Tremor-LICENSE`. Map geometry is public-domain [Natural Earth](https://www.naturalearthdata.com/about/terms-of-use/) data, converted once to SVG paths by `scripts/build-map.py` using the upstream [110m country boundaries](https://github.com/nvkelso/natural-earth-vector/blob/master/geojson/ne_110m_admin_0_countries.geojson).
+
+## Refactoring boundaries
+
+`MarketConsole` coordinates URL state and composes the workspace, header, summary, chart group, and priorities. `ConsoleWithAssistant` injects the assistant and its hint without making dashboard modules import chat logic. `Panel` and `DataTable` own shared presentation and accessibility markup. Market projections and comparison normalization are pure functions.
+
+`AlertForm` owns validation, `useAlertRules` owns optimistic saving and rollback, and `SavedAlerts` owns rule display. For chat, `useChat` owns request lifetime and turn updates, `useChatScroll` owns scroll-follow behavior, and `ChatComposer` owns input. HTTP/SSE transport and citation resolution live in `src/lib`. These are feature-specific components and hooks, with no additional state or service framework.

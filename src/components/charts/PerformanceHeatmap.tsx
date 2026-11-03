@@ -1,9 +1,8 @@
 "use client";
+import type { DashboardProps } from "@/components/dashboard/types";
 import { useRef, useState, type KeyboardEvent } from "react";
-import { Card } from "@/components/Card";
-import type { Dataset } from "@/data/types";
-import type { DashboardView } from "@/lib/view";
-import { trendFor } from "@/lib/metrics";
+import { Panel } from "@/components/Panel";
+import { marketsInScope, trendFor } from "@/lib/metrics";
 import { percent, periodLabel } from "@/lib/format";
 
 function cellColors(variance: number | null) {
@@ -19,21 +18,13 @@ export default function PerformanceHeatmap({
   data,
   view,
   update,
-}: {
-  data: Dataset;
-  view: DashboardView;
-  update: (patch: Partial<DashboardView>) => void;
-}) {
+}: DashboardProps) {
   const table = useRef<HTMLTableElement>(null);
   const [focused, setFocused] = useState({
     row: 0,
     col: data.meta.periods.indexOf(view.period),
   });
-  const markets = data.markets.filter(
-    (market) =>
-      (!view.region || market.regionId === view.region) &&
-      (view.status === "all" || view.status === market.kpis.status),
-  );
+  const markets = marketsInScope(data, { ...view, market: undefined });
   const rows = markets.map((market) => ({
     market,
     points: trendFor(data, { market: market.id, product: view.product }),
@@ -77,23 +68,25 @@ export default function PerformanceHeatmap({
       ?.focus();
   }
   return (
-    <Card
-      className="panel full-width"
-      role="region"
-      aria-labelledby="heatmap-title"
+    <Panel
+      id="heatmap"
+      title="Forecast variance by market"
+      eyebrow="FIND THE PATTERN"
+      className="full-width"
+      action={
+        <>
+          <span className="count-chip">24 months</span>
+        </>
+      }
+      description={
+        <>
+          Actual vs forecast, in %. Select a cell to focus its market and
+          period. Use arrow keys to move; Enter to select. * marks a source
+          anomaly at market level.
+        </>
+      }
+      descriptionId="heatmap-help"
     >
-      <div className="panel-heading">
-        <div>
-          <p className="eyebrow">FIND THE PATTERN</p>
-          <h2 id="heatmap-title">Forecast variance by market</h2>
-        </div>
-        <span className="count-chip">24 months</span>
-      </div>
-      <p id="heatmap-help" className="panel-description">
-        Actual vs forecast, in %. Select a cell to focus its market and period.
-        Use arrow keys to move; Enter to select. * marks a source anomaly at
-        market level.
-      </p>
       <div
         className="heatmap-scroll table-scroll"
         tabIndex={0}
@@ -156,9 +149,7 @@ export default function PerformanceHeatmap({
                           })
                         }
                       >
-                        {variance === null
-                          ? "—"
-                          : `${variance >= 0 ? "+" : ""}${variance.toFixed(0)}`}
+                        {displayValue}
                         {anomaly && <sup>*</sup>}
                       </button>
                     </td>
@@ -196,6 +187,6 @@ export default function PerformanceHeatmap({
         Cells show rounded percentages; accessible labels and hover text retain
         one decimal place.
       </p>
-    </Card>
+    </Panel>
   );
 }

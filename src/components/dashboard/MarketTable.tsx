@@ -1,22 +1,14 @@
 "use client";
+import type { DashboardProps } from "./types";
 import { useState } from "react";
-import { Card } from "@/components/Card";
-import type { Dataset } from "@/data/types";
-import type { DashboardView } from "@/lib/view";
-import { marketsInScope, metricsFor } from "@/lib/metrics";
+import { Panel } from "@/components/Panel";
+import { DataTable } from "@/components/DataTable";
+import { marketMetricsFor, metricsFor } from "@/lib/metrics";
 import { money, percent, periodLabel } from "@/lib/format";
 import { StatusBadge } from "./StatusBadge";
 
 type SortKey = "actual" | "growth" | "attainment" | "gap";
-export function MarketTable({
-  data,
-  view,
-  update,
-}: {
-  data: Dataset;
-  view: DashboardView;
-  update: (patch: Partial<DashboardView>) => void;
-}) {
+export function MarketTable({ data, view, update }: DashboardProps) {
   const [sort, setSort] = useState<{ key: SortKey; ascending: boolean }>({
     key: "actual",
     ascending: false,
@@ -39,12 +31,14 @@ export function MarketTable({
           view.period,
         ),
       }))
-    : marketsInScope(data, view).map((market) => ({
-        id: market.id,
-        name: market.name,
-        market,
-        ...metricsFor(data, { market: market.id }, view.period),
-      }));
+    : marketMetricsFor(data, view, view.period).map(
+        ({ market, ...metrics }) => ({
+          id: market.id,
+          name: market.name,
+          market,
+          ...metrics,
+        }),
+      );
   rows.sort((a, b) => {
     const av = a[sort.key],
       bv = b[sort.key];
@@ -82,137 +76,135 @@ export function MarketTable({
     );
   }
   return (
-    <Card
+    <Panel
       id="analyst-table"
-      className="panel full-width"
-      role="region"
-      aria-labelledby="table-title"
+      title={
+        <>
+          {selectedMarket
+            ? `${selectedMarket.name} · Product performance`
+            : "Market performance"}
+        </>
+      }
+      eyebrow="THE NUMBERS BEHIND THE SIGNAL"
+      titleId="table-title"
+      className="full-width"
+      action={
+        <>
+          <span className="count-chip">
+            {rows.length} {selectedMarket ? "products" : "markets"}
+          </span>
+        </>
+      }
     >
-      <div className="panel-heading">
-        <div>
-          <p className="eyebrow">THE NUMBERS BEHIND THE SIGNAL</p>
-          <h2 id="table-title">
-            {selectedMarket
-              ? `${selectedMarket.name} · Product performance`
-              : "Market performance"}
-          </h2>
-        </div>
-        <span className="count-chip">
-          {rows.length} {selectedMarket ? "products" : "markets"}
-        </span>
-      </div>
-      <div
-        className="table-scroll"
-        tabIndex={0}
-        role="region"
-        aria-label="Detailed performance data"
-      >
-        <table>
-          <caption>
+      <DataTable
+        label="Detailed performance data"
+        caption={
+          <>
             {periodLabel(view.period)} · Revenue in {data.meta.currency}. Status
             and market share refer to {periodLabel(data.meta.latestPeriod)};
             market share is unavailable for products or historical periods.
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col">{selectedMarket ? "Product" : "Market"}</th>
-              {!selectedMarket && <th scope="col">Region</th>}
-              {heading("actual", "Revenue")}
-              <th scope="col">Forecast</th>
-              {heading("gap", "Variance")}
-              {heading("growth", "Growth")}
-              {heading("attainment", "Attainment")}
-              <th scope="col">Units</th>
+          </>
+        }
+      >
+        <thead>
+          <tr>
+            <th scope="col">{selectedMarket ? "Product" : "Market"}</th>
+            {!selectedMarket && <th scope="col">Region</th>}
+            {heading("actual", "Revenue")}
+            <th scope="col">Forecast</th>
+            {heading("gap", "Variance")}
+            {heading("growth", "Growth")}
+            {heading("attainment", "Attainment")}
+            <th scope="col">Units</th>
+            {!selectedMarket && (
+              <>
+                <th scope="col">Market share</th>
+                <th scope="col">Latest status</th>
+              </>
+            )}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr
+              key={row.id}
+              aria-selected={
+                selectedMarket
+                  ? row.id === view.product
+                  : row.id === view.market
+              }
+            >
+              <th scope="row">
+                <button
+                  className="table-link"
+                  onClick={() =>
+                    update(
+                      selectedMarket
+                        ? { product: row.id }
+                        : {
+                            region: row.market.regionId,
+                            market: row.id,
+                            product: undefined,
+                          },
+                    )
+                  }
+                >
+                  {row.name}
+                  {selectedMarket && row.id === view.product
+                    ? " · Selected"
+                    : ""}
+                </button>
+              </th>
               {!selectedMarket && (
-                <>
-                  <th scope="col">Market share</th>
-                  <th scope="col">Latest status</th>
-                </>
-              )}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr
-                key={row.id}
-                aria-selected={
-                  selectedMarket
-                    ? row.id === view.product
-                    : row.id === view.market
-                }
-              >
-                <th scope="row">
+                <td>
                   <button
                     className="table-link"
                     onClick={() =>
-                      update(
-                        selectedMarket
-                          ? { product: row.id }
-                          : {
-                              region: row.market.regionId,
-                              market: row.id,
-                              product: undefined,
-                            },
-                      )
+                      update({
+                        region: row.market.regionId,
+                        market: undefined,
+                        product: undefined,
+                      })
                     }
                   >
-                    {row.name}
-                    {selectedMarket && row.id === view.product
-                      ? " · Selected"
-                      : ""}
+                    {
+                      data.regions.find(
+                        (region) => region.id === row.market.regionId,
+                      )?.name
+                    }
                   </button>
-                </th>
-                {!selectedMarket && (
-                  <td>
-                    <button
-                      className="table-link"
-                      onClick={() =>
-                        update({
-                          region: row.market.regionId,
-                          market: undefined,
-                          product: undefined,
-                        })
-                      }
-                    >
-                      {
-                        data.regions.find(
-                          (region) => region.id === row.market.regionId,
-                        )?.name
-                      }
-                    </button>
-                  </td>
-                )}
-                <td>{money(row.actual, data.meta.currency, false)}</td>
-                <td>{money(row.forecast, data.meta.currency, false)}</td>
-                <td className={row.gap >= 0 ? "positive" : "negative"}>
-                  {row.gap > 0 ? "+" : ""}
-                  {money(row.gap, data.meta.currency, false)}
                 </td>
-                <td>{percent(row.growth, true)}</td>
-                <td>{percent(row.attainment)}</td>
-                <td>{row.units.toLocaleString("en-US")}</td>
-                {!selectedMarket && (
-                  <>
-                    <td>
-                      {view.period === data.meta.latestPeriod
-                        ? percent(row.market.kpis.sharePct)
-                        : "Unavailable"}
-                    </td>
-                    <td>
-                      <StatusBadge status={row.market.kpis.status} />
-                    </td>
-                  </>
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+              )}
+              <td>{money(row.actual, data.meta.currency, false)}</td>
+              <td>{money(row.forecast, data.meta.currency, false)}</td>
+              <td className={row.gap >= 0 ? "positive" : "negative"}>
+                {row.gap > 0 ? "+" : ""}
+                {money(row.gap, data.meta.currency, false)}
+              </td>
+              <td>{percent(row.growth, true)}</td>
+              <td>{percent(row.attainment)}</td>
+              <td>{row.units.toLocaleString("en-US")}</td>
+              {!selectedMarket && (
+                <>
+                  <td>
+                    {view.period === data.meta.latestPeriod
+                      ? percent(row.market.kpis.sharePct)
+                      : "Unavailable"}
+                  </td>
+                  <td>
+                    <StatusBadge status={row.market.kpis.status} />
+                  </td>
+                </>
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </DataTable>
       {rows.length === 0 && (
         <p className="empty-panel">
           No markets match this selection. Change the scope or status filter.
         </p>
       )}
-    </Card>
+    </Panel>
   );
 }

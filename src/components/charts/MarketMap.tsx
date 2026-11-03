@@ -1,10 +1,10 @@
 "use client";
+import type { DashboardProps } from "@/components/dashboard/types";
 import { useState } from "react";
-import { Card } from "@/components/Card";
+import { Panel } from "@/components/Panel";
+import { DataTable } from "@/components/DataTable";
 import world from "@/data/world-map.json";
-import type { Dataset } from "@/data/types";
-import type { DashboardView } from "@/lib/view";
-import { metricsFor } from "@/lib/metrics";
+import { marketMetricsFor } from "@/lib/metrics";
 import { money, percent, periodLabel } from "@/lib/format";
 
 const colors = ["#b55a60", "#d8ac64", "#c8dbba", "#6fa88f", "#247963"];
@@ -14,37 +14,21 @@ const metricLabels = {
   revenue: "Revenue",
 };
 
-export default function MarketMap({
-  data,
-  view,
-  update,
-}: {
-  data: Dataset;
-  view: DashboardView;
-  update: (patch: Partial<DashboardView>) => void;
-}) {
+export default function MarketMap({ data, view, update }: DashboardProps) {
   const [hovered, setHovered] = useState<string | null>(null);
-  const markets = data.markets.filter(
-    (market) =>
-      (!view.region || market.regionId === view.region) &&
-      (view.status === "all" || market.kpis.status === view.status),
-  );
-  const values = markets.map((market) => {
-    const metrics = metricsFor(
-      data,
-      { market: market.id, product: view.product },
-      view.period,
-    );
-    return {
-      market,
-      value:
-        view.mapKpi === "revenue"
-          ? metrics.actual
-          : view.mapKpi === "growth"
-            ? metrics.growth
-            : metrics.attainment,
-    };
-  });
+  const values = marketMetricsFor(
+    data,
+    { ...view, market: undefined },
+    view.period,
+  ).map((metrics) => ({
+    market: metrics.market,
+    value:
+      view.mapKpi === "revenue"
+        ? metrics.actual
+        : view.mapKpi === "growth"
+          ? metrics.growth
+          : metrics.attainment,
+  }));
   const maximum = Math.max(1, ...values.map((item) => item.value ?? 0));
   const thresholds =
     view.mapKpi === "attainment"
@@ -69,38 +53,42 @@ export default function MarketMap({
     values.find((item) => item.market.id === view.market);
 
   return (
-    <Card className="panel" role="region" aria-labelledby="map-title">
-      <div className="panel-heading">
-        <div>
-          <p className="eyebrow">A GLOBAL PERSPECTIVE</p>
-          <h2 id="map-title">Markets at a glance</h2>
-        </div>
-        <label className="compact-label">
-          Color by
-          <select
-            value={view.mapKpi}
-            onChange={(event) => {
-              const value = event.target.value;
-              if (
-                value === "attainment" ||
-                value === "growth" ||
-                value === "revenue"
-              )
-                update({ mapKpi: value });
-            }}
-          >
-            {Object.entries(metricLabels).map(([key, label]) => (
-              <option key={key} value={key}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <p className="panel-description">
-        {periodLabel(view.period)} · Select a country to drill in. Outlined
-        country is selected; gray countries have no data in this scope.
-      </p>
+    <Panel
+      id="map"
+      title="Markets at a glance"
+      eyebrow="A GLOBAL PERSPECTIVE"
+      action={
+        <>
+          <label className="compact-label">
+            Color by
+            <select
+              value={view.mapKpi}
+              onChange={(event) => {
+                const value = event.target.value;
+                if (
+                  value === "attainment" ||
+                  value === "growth" ||
+                  value === "revenue"
+                )
+                  update({ mapKpi: value });
+              }}
+            >
+              {Object.entries(metricLabels).map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </>
+      }
+      description={
+        <>
+          {periodLabel(view.period)} · Select a country to drill in. Outlined
+          country is selected; gray countries have no data in this scope.
+        </>
+      }
+    >
       <div className="world-map">
         <svg
           viewBox="0 0 720 300"
@@ -167,7 +155,7 @@ export default function MarketMap({
       <p className="map-readout" aria-live="polite">
         {active
           ? `${active.market.name} · ${format(active.value)} ${metricLabels[view.mapKpi]}`
-          : `${markets.length} tracked markets in scope · Hover or focus a country to inspect`}
+          : `${values.length} tracked markets in scope · Hover or focus a country to inspect`}
       </p>
       <div className="map-legend" aria-label="Map color scale">
         {colors.map((fill, index) => (
@@ -185,55 +173,46 @@ export default function MarketMap({
           No data
         </span>
       </div>
-      <details className="data-alternative">
-        <summary>View map data table</summary>
-        <div
-          className="table-scroll"
-          tabIndex={0}
-          role="region"
-          aria-label="Country map data"
-        >
-          <table>
-            <caption>
-              {metricLabels[view.mapKpi]} · {periodLabel(view.period)}. All
-              monetary values in {data.meta.currency}.
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col">Country</th>
-                <th scope="col">Region</th>
-                <th scope="col">{metricLabels[view.mapKpi]}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {values.map(({ market, value }) => (
-                <tr key={market.id} aria-selected={view.market === market.id}>
-                  <th scope="row">
-                    <button
-                      className="table-link"
-                      onClick={() => choose(market)}
-                    >
-                      {market.name}
-                      {view.market === market.id ? " · Selected" : ""}
-                    </button>
-                  </th>
-                  <td>
-                    {
-                      data.regions.find(
-                        (region) => region.id === market.regionId,
-                      )?.name
-                    }
-                  </td>
-                  <td>{format(value)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </details>
+      <DataTable
+        label="Country map data"
+        caption={
+          <>
+            {metricLabels[view.mapKpi]} · {periodLabel(view.period)}. All
+            monetary values in {data.meta.currency}.
+          </>
+        }
+        summary="View map data table"
+      >
+        <thead>
+          <tr>
+            <th scope="col">Country</th>
+            <th scope="col">Region</th>
+            <th scope="col">{metricLabels[view.mapKpi]}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {values.map(({ market, value }) => (
+            <tr key={market.id} aria-selected={view.market === market.id}>
+              <th scope="row">
+                <button className="table-link" onClick={() => choose(market)}>
+                  {market.name}
+                  {view.market === market.id ? " · Selected" : ""}
+                </button>
+              </th>
+              <td>
+                {
+                  data.regions.find((region) => region.id === market.regionId)
+                    ?.name
+                }
+              </td>
+              <td>{format(value)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </DataTable>
       <p className="chart-credit">
         Made with Natural Earth · Public-domain country boundaries
       </p>
-    </Card>
+    </Panel>
   );
 }

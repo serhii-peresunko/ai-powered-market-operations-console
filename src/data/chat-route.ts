@@ -1,3 +1,4 @@
+import { MAX_QUESTION_LENGTH } from "@/lib/chat";
 // Fixture-backed SSE endpoint. No LLM or external service is called.
 import { pickFixture } from "./fixtures";
 import type { ChatEvent } from "./types";
@@ -15,10 +16,10 @@ export async function POST(req: Request) {
     !("question" in body) ||
     typeof body.question !== "string" ||
     !body.question.trim() ||
-    body.question.length > 1000
+    body.question.length > MAX_QUESTION_LENGTH
   ) {
     return Response.json(
-      { error: "Question must contain 1–1000 characters." },
+      { error: `Question must contain 1–${MAX_QUESTION_LENGTH} characters.` },
       { status: 400 },
     );
   }

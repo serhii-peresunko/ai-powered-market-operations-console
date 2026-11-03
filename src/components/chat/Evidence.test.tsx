@@ -2,7 +2,8 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { data } from "@/data";
 import { readView } from "@/lib/view";
-import { citationView, Evidence } from "./Evidence";
+import { Evidence } from "./Evidence";
+import { resolveCitation } from "@/lib/citations";
 
 const view = readView(new URLSearchParams("market=jp&product=calyx"), data);
 
@@ -58,12 +59,12 @@ describe("answer evidence", () => {
     expect(screen.queryByRole("link")).not.toBeInTheDocument();
   });
   it("rejects unresolved or contradictory citation targets", () => {
-    expect(citationView(data, view, { marketId: "missing" })).toBeNull();
+    expect(resolveCitation(data, view, { marketId: "missing" })).toBeNull();
     expect(
-      citationView(data, view, { marketId: "de", regionId: "apac" }),
+      resolveCitation(data, view, { marketId: "de", regionId: "apac" }),
     ).toBeNull();
     expect(
-      citationView(data, view, { marketId: "de", period: "2030-01" }),
+      resolveCitation(data, view, { marketId: "de", period: "2030-01" }),
     ).toBeNull();
   });
 });

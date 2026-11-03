@@ -1,47 +1,13 @@
-import type { ChatEvent, Citation, Dataset } from "@/data/types";
-import { periodLabel } from "@/lib/format";
-import { viewParams, type DashboardView } from "@/lib/view";
-
-export function citationView(
-  data: Dataset,
-  view: DashboardView,
-  citation: Citation,
-): DashboardView | null {
-  const market = data.markets.find((item) => item.id === citation.marketId);
-  const region = data.regions.find((item) => item.id === citation.regionId);
-  if (
-    (citation.marketId && !market) ||
-    (citation.regionId && !region) ||
-    (citation.productId &&
-      !data.products.some((item) => item.id === citation.productId)) ||
-    (citation.period && !data.meta.periods.includes(citation.period)) ||
-    (!market && !region) ||
-    (citation.productId && !market) ||
-    (market && region && market.regionId !== region.id)
-  )
-    return null;
-  return {
-    ...view,
-    region: market?.regionId ?? region?.id,
-    market: market?.id,
-    product: citation.productId,
-    period: citation.period ?? data.meta.latestPeriod,
-    mode: "analyst",
-    status: "all",
-  };
-}
+import { resolveCitation } from "@/lib/citations";
+import { viewParams } from "@/lib/view";
+import type { AssistantContext, ChatCompletion } from "./types";
 
 export function Evidence({
   data,
   view,
   completion,
   onNavigate,
-}: {
-  data: Dataset;
-  view: DashboardView;
-  completion: Extract<ChatEvent, { type: "done" }>;
-  onNavigate: (view: DashboardView) => void;
-}) {
+}: AssistantContext & { completion: ChatCompletion }) {
   if (completion.kind === "error")
     return (
       <p className="notice error-text">
@@ -80,37 +46,20 @@ export function Evidence({
           </h3>
           <ul className="citation-list">
             {completion.citations.map((citation, index) => {
-              const target = citationView(data, view, citation);
-              const entity =
-                data.markets.find((item) => item.id === citation.marketId)
-                  ?.name ??
-                data.regions.find((item) => item.id === citation.regionId)
-                  ?.name;
-              const product = data.products.find(
-                (item) => item.id === citation.productId,
-              )?.name;
-              const label = [
-                entity,
-                product,
-                citation.period
-                  ? periodLabel(citation.period)
-                  : periodLabel(data.meta.latestPeriod),
-              ]
-                .filter(Boolean)
-                .join(" · ");
+              const target = resolveCitation(data, view, citation);
               return (
                 <li key={index}>
                   {target ? (
                     <a
-                      href={`?${viewParams(target)}#dashboard`}
+                      href={`?${viewParams(target.view)}#dashboard`}
                       title={citation.label}
                       onClick={(event) => {
                         event.preventDefault();
-                        onNavigate(target);
+                        onNavigate(target.view);
                       }}
                     >
                       <span className="citation-number">{index + 1}</span>
-                      <span>{label}</span>
+                      <span>{target.label}</span>
                       <span aria-hidden="true">↗</span>
                     </a>
                   ) : (
