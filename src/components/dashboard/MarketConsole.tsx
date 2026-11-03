@@ -4,8 +4,10 @@ import { RiBarChartBoxLine, RiDashboardLine, RiSparklingLine, RiGlobalLine, RiAr
 import { Card } from "@/components/Card";
 import Link from "next/link";
 import type { Dataset, Status } from "@/data/types";
-import { marketsInScope, metricsFor, scopeName, type Scope } from "@/lib/metrics";
+import { marketsInScope, metricsFor, scopeName } from "@/lib/metrics";
 import { money, percent, periodLabel } from "@/lib/format";
+import { useDashboardView } from "./useDashboardView";
+import { ViewControls } from "./ViewControls";
 
 export const statusLabels: Record<Status, string> = { on_track: "On track", at_risk: "At risk", off_track: "Off track" };
 
@@ -14,12 +16,12 @@ export function StatusBadge({ status }: { status: Status }) {
 }
 
 export function MarketConsole({ data }: { data: Dataset }) {
-  const scope: Scope = {};
-  const period = data.meta.latestPeriod;
+  const { view: scope, update } = useDashboardView(data);
+  const period = scope.period;
   const metrics = metricsFor(data, scope, period);
-  const markets = marketsInScope(data, scope);
+  const markets = marketsInScope(data, scope).filter((market) => scope.status === "all" || market.kpis.status === scope.status);
   const risks = markets.filter((market) => market.kpis.status !== "on_track");
-  const movers = markets.map((market) => ({ market, ...metricsFor(data, { market: market.id }, period) }))
+  const movers = markets.map((market) => ({ market, ...metricsFor(data, { market: market.id, product: scope.product }, period) }))
     .sort((a, b) => Math.abs(b.gap) - Math.abs(a.gap)).slice(0, 4);
 
   return <div className="workspace">
@@ -33,9 +35,10 @@ export function MarketConsole({ data }: { data: Dataset }) {
       <div className="nav-footer"><span className="avatar">MO</span><div>Commercial operations<small>Demo workspace · USD</small></div></div>
     </aside>
     <main id="dashboard" className="dashboard-main">
-      <div className="topbar"><span>Workspace <span aria-hidden="true">/</span> <strong>Overview</strong></span><span className="source-pill"><span aria-hidden="true">●</span> Canonical dataset</span></div>
+      <div className="topbar"><nav aria-label="Drill path" className="breadcrumbs"><button onClick={() => update({ region: undefined, market: undefined, product: undefined })}>Portfolio</button>{scope.region && <><span>/</span><button onClick={() => update({ market: undefined, product: undefined })}>{data.regions.find((r) => r.id === scope.region)?.name}</button></>}{scope.market && <><span>/</span><button onClick={() => update({ product: undefined })}>{data.markets.find((m) => m.id === scope.market)?.name}</button></>}{scope.product && <><span>/</span><strong>{scopeName(data, scope)}</strong></>}</nav><span className="source-pill"><span aria-hidden="true">●</span> Canonical dataset</span></div>
       <header className="page-heading"><div><p className="eyebrow">YOUR PORTFOLIO, IN FOCUS</p><h1>{scopeName(data, scope)} overview</h1><p className="secondary-text">The signals that matter. The context to act.</p></div><div className="period-stamp"><span>REPORTING PERIOD</span><strong>{periodLabel(period)}</strong></div></header>
       <div className="source-note"><span className="source-dot" aria-hidden="true" />Source data · {periodLabel(period)} · All revenue in {data.meta.currency}<span className="source-note-end">Synthetic assignment dataset</span></div>
+      <ViewControls data={data} view={scope} update={update} />
       <section className="kpi-grid" aria-label="Portfolio health">
         <Card className="metric-card"><p>Total revenue</p><strong>{money(metrics.actual, data.meta.currency)}</strong><span className={metrics.growth !== null && metrics.growth >= 0 ? "positive" : "negative"}>{percent(metrics.growth, true)} <span className="metric-context">vs prior year</span></span></Card>
         <Card className="metric-card"><p>Forecast attainment</p><strong>{percent(metrics.attainment)}</strong><span className={metrics.gap >= 0 ? "positive" : "negative"}>{money(metrics.gap, data.meta.currency)} <span className="metric-context">vs plan</span></span></Card>
@@ -43,8 +46,8 @@ export function MarketConsole({ data }: { data: Dataset }) {
         <Card className="metric-card"><p>Markets to watch</p><strong>{risks.length}<small> / {markets.length}</small></strong><span className="metric-context">Latest source status · {periodLabel(data.meta.latestPeriod)}</span></Card>
       </section>
       <div className="dashboard-grid">
-        <Card id="market-detail" className="panel"><div className="panel-heading"><div><p className="eyebrow">PRIORITIZE</p><h2>Markets to watch</h2></div><span className="count-chip">{risks.length} markets</span></div><p className="panel-description">Latest source flags, including off-track markets.</p><div className="risk-list">{risks.map((market) => <div key={market.id} className="risk-row"><span className="country-code">{market.iso2}</span><div className="risk-name"><strong>{market.name}</strong><span>{data.regions.find((region) => region.id === market.regionId)?.name}</span></div><StatusBadge status={market.kpis.status} /></div>)}</div></Card>
-        <Card className="panel"><div className="panel-heading"><div><p className="eyebrow">WHAT MOVED THE NEEDLE</p><h2>Largest forecast gaps</h2></div><RiArrowRightUpLine size={20} aria-hidden="true" /></div><p className="panel-description">Ranked by absolute revenue variance from plan.</p><div className="movers-list">{movers.map(({ market, gap, attainment }) => <div key={market.id} className="mover-row"><div><strong>{market.name}</strong><span>{percent(attainment)} of forecast</span></div><strong className={gap >= 0 ? "positive" : "negative"}>{gap > 0 ? "+" : ""}{money(gap, data.meta.currency)}</strong></div>)}</div><div className="insight-note"><RiSparklingLine size={17} aria-hidden="true" /><span>Have a question about a market? Explore the evidence with the assistant.</span></div></Card>
+        <Card id="market-detail" className="panel"><div className="panel-heading"><div><p className="eyebrow">PRIORITIZE</p><h2>Markets to watch</h2></div><span className="count-chip">{risks.length} markets</span></div><p className="panel-description">Latest source flags, including off-track markets.</p><div className="risk-list">{risks.map((market) => <div key={market.id} className="risk-row"><span className="country-code">{market.iso2}</span><button className="risk-name" onClick={() => update({ region: market.regionId, market: market.id, product: undefined })} aria-label={`View ${market.name}`}><strong>{market.name}</strong><span>{data.regions.find((region) => region.id === market.regionId)?.name}</span></button><StatusBadge status={market.kpis.status} /></div>)}</div></Card>
+        <Card className="panel"><div className="panel-heading"><div><p className="eyebrow">WHAT MOVED THE NEEDLE</p><h2>Largest forecast gaps</h2></div><RiArrowRightUpLine size={20} aria-hidden="true" /></div><p className="panel-description">Ranked by absolute revenue variance from plan.</p><div className="movers-list">{movers.map(({ market, gap, attainment }) => <div key={market.id} className="mover-row"><button className="market-link" onClick={() => update({ region: market.regionId, market: market.id, product: undefined })}><strong>{market.name}</strong><span>{percent(attainment)} of forecast</span></button><strong className={gap >= 0 ? "positive" : "negative"}>{gap > 0 ? "+" : ""}{money(gap, data.meta.currency)}</strong></div>)}</div><div className="insight-note"><RiSparklingLine size={17} aria-hidden="true" /><span>Have a question about a market? Explore the evidence with the assistant.</span></div></Card>
       </div>
       <footer className="dashboard-footer">Source of truth: canonical dataset <span>Generated {data.meta.generatedAt}</span></footer>
     </main>
