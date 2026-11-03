@@ -1,58 +1,47 @@
-// Reference mock streaming endpoint for the Market Operations console assignment.
-//
-// It fakes an LLM: it matches the incoming question to a fixture and streams the
-// answer back token-by-token as Server-Sent Events. No model, no network call,
-// fully deterministic. Use it as-is or replace it with your own equivalent; the
-// event contract (see CONTRACT.md) is what matters.
-//
-// Place this at: app/api/chat/route.ts
-// Adjust the import below to wherever you put fixtures.json.
-
+// Fixture-backed SSE endpoint. No LLM or external service is called.
 import { pickFixture } from "./fixtures";
 import type { ChatEvent } from "./types";
 
-export const runtime = "nodejs";
-
 export async function POST(req: Request) {
-  const { question = "" } = (await req.json()) as { question?: string };
-  const fixture = pickFixture(question);
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return Response.json({ error: "Send a JSON question." }, { status: 400 });
+  }
+  if (!body || typeof body !== "object" || !("question" in body) ||
+      typeof body.question !== "string" || !body.question.trim() || body.question.length > 1000) {
+    return Response.json({ error: "Question must contain 1–1000 characters." }, { status: 400 });
+  }
+  const fixture = pickFixture(body.question.trim());
   const encoder = new TextEncoder();
-  const send = (obj: ChatEvent) => encoder.encode(`data: ${JSON.stringify(obj)}\n\n`);
+  const encode = (event: ChatEvent) => encoder.encode(`data: ${JSON.stringify(event)}\n\n`);
+  const tokens = fixture.answer.text.match(/\S+\s*/g) ?? [];
+  let index = 0;
+  let cancelled = false;
 
   const stream = new ReadableStream<Uint8Array>({
-    async start(controller) {
-      // Error fixture: emit a single error event and stop.
+    async pull(controller) {
+      if (cancelled) return;
+      if (req.signal.aborted) { controller.close(); return; }
       if (fixture.kind === "error") {
-        controller.enqueue(send({ type: "error", message: fixture.error ?? "Something went wrong." }));
+        controller.enqueue(encode({ type: "error", message: fixture.error ?? "Something went wrong." }));
         controller.close();
         return;
       }
-
-      // Stream the answer one whitespace-delimited token at a time.
-      const tokens = fixture.answer.text.match(/\S+\s*/g) ?? [];
-      for (const value of tokens) {
-        controller.enqueue(send({ type: "token", value }));
-        await new Promise((r) => setTimeout(r, 35)); // simulate token latency
+      if (index < tokens.length) {
+        await new Promise((resolve) => setTimeout(resolve, 35));
+        if (cancelled) return;
+        if (req.signal.aborted) { controller.close(); return; }
+        controller.enqueue(encode({ type: "token", value: tokens[index++] }));
+      } else {
+        controller.enqueue(encode({ type: "done", kind: fixture.kind, citations: fixture.answer.citations, confidence: fixture.answer.confidence }));
+        controller.close();
       }
-
-      // Final event carries the metadata the trust surface renders.
-      controller.enqueue(
-        send({
-          type: "done",
-          kind: fixture.kind,
-          citations: fixture.answer.citations,
-          confidence: fixture.answer.confidence,
-        }),
-      );
-      controller.close();
     },
+    cancel() { cancelled = true; },
   });
-
   return new Response(stream, {
-    headers: {
-      "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache, no-transform",
-      Connection: "keep-alive",
-    },
+    headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache, no-transform", "X-Accel-Buffering": "no" },
   });
 }
