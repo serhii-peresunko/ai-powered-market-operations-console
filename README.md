@@ -105,7 +105,7 @@ Automated axe checks cover WCAG 2.1 A/AA rules on the analyst view. Mobile overf
 
 The checks use behavioral assertions rather than snapshot collections or tests of chart-library internals. Strict typing, runtime event validation, safe plain-text rendering, shared metric calculations, feature boundaries, and focused branches are the main standards. Storybook, table virtualization, exhaustive browser matrices, and a real backend were deliberately deferred.
 
-Each planned task has a separate branch, merged locally into `dev`. See [the task ledger](docs/TASKS.md).
+Work is grouped into three branches: `feat/initial`, `feat/dashboard`, and `feat/assistant`. Original commits and merge history are preserved in `dev`. See [the task ledger](docs/TASKS.md).
 
 ## Production path
 
