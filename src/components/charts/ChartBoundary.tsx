@@ -1,5 +1,6 @@
 "use client";
 import { Component, type ReactNode } from "react";
+import { CHART_BOUNDARY_TEXT as TEXT } from "./copy";
 
 const UI = {
   notice: "notice",
@@ -16,8 +17,7 @@ export class ChartBoundary extends Component<
   render() {
     return this.state.failed ? (
       <p className={UI.notice} role="alert">
-        The chart could not be displayed. Use the data table below to inspect
-        the same values.
+        {TEXT.failure}
       </p>
     ) : (
       this.props.children

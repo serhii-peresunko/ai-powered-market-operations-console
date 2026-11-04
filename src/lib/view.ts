@@ -1,7 +1,7 @@
 import type { Dataset, Status } from "@/data/types";
 import { isStatus } from "@/data/types";
 import { ALL_STATUSES, type Scope } from "./metrics";
-import { comparisonEntities } from "./comparisons";
+import { comparisonEntities, MAX_COMPARISONS } from "./comparisons";
 
 export const DASHBOARD_MODE = {
   EXECUTIVE: "executive",
@@ -69,7 +69,7 @@ export function readView(
             ...new Set(
               compare.split(",").filter((id) => comparisonIds.has(id)),
             ),
-          ].slice(0, 4),
+          ].slice(0, MAX_COMPARISONS),
   };
 }
 

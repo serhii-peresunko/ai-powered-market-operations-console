@@ -1,0 +1,15 @@
+export const WORKSPACE_TEXT = {
+  skipToDashboard: "Skip to dashboard",
+  workspaceNavigation: "Workspace navigation",
+  marketOperationsHome: "Market operations home",
+  market: "market",
+  ops: "ops",
+  portfolioIntelligence: "PORTFOLIO INTELLIGENCE",
+  workspace: "WORKSPACE",
+  overview: "Overview",
+  markets: "Markets",
+  assistant: "Assistant",
+  mo: "MO",
+  commercialOperations: "Commercial operations",
+  demoWorkspaceUsd: "Demo workspace · USD",
+} as const;

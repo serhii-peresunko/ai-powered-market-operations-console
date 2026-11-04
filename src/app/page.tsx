@@ -1,6 +1,7 @@
 import { MarketConsole } from "@/components/dashboard/MarketConsole";
 import { data } from "@/data";
 import { Suspense } from "react";
+import { PAGE_TEXT as TEXT } from "./copy";
 
 const UI = {
   loadingState: "loading-state",
@@ -10,7 +11,7 @@ export default function Home() {
   return (
     <Suspense
       fallback={
-        <main className={UI.loadingState}>Loading market operations…</main>
+        <main className={UI.loadingState}>{TEXT.loadingMarketOperations}</main>
       }
     >
       <MarketConsole data={data} />
