@@ -27,6 +27,15 @@ export function CitationList({
                 href={`?${viewParams(target.view)}#dashboard`}
                 title={citation.label}
                 onClick={(event) => {
+                  if (
+                    event.defaultPrevented ||
+                    event.button !== 0 ||
+                    event.metaKey ||
+                    event.ctrlKey ||
+                    event.shiftKey ||
+                    event.altKey
+                  )
+                    return;
                   event.preventDefault();
                   onNavigate(target.view);
                 }}
@@ -37,8 +46,7 @@ export function CitationList({
               </a>
             ) : (
               <span className={UI.notice}>
-                {TEXT.sourceUnavailable}{" "}
-                {citation.label ?? TEXT.unresolvedCitation}
+                {TEXT.sourceUnavailable(citation.label)}
               </span>
             )}
           </li>
