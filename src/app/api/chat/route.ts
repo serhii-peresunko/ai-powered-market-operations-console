@@ -1,1 +1,1 @@
-export { POST } from "@/data/chat-route";
+export { POST } from "@/features/assistant/server/chat-route";

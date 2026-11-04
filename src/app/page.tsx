@@ -1,7 +1,8 @@
-import { ConsoleWithAssistant } from "@/components/chat/ConsoleWithAssistant";
+import { MarketWorkspace } from "./_components/MarketWorkspace";
 import { data } from "@/data";
-import { Suspense } from "react";
 import { LOADING_TEXT as TEXT } from "./copy";
+
+import { Suspense } from "react";
 
 const UI = {
   loadingState: "loading-state",
@@ -14,7 +15,7 @@ export default function Home() {
         <main className={UI.loadingState}>{TEXT.loadingMarketOperations}</main>
       }
     >
-      <ConsoleWithAssistant data={data} />
+      <MarketWorkspace data={data} />
     </Suspense>
   );
 }

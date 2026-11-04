@@ -61,7 +61,20 @@ URL state owns region, market, product, period, audience mode, map metric, compa
 
 Conversation turns, composer input, table sort, heat-map keyboard focus, and unsaved form values are local React state. Alerts persist only in this browser. There is no shared persistence or notification delivery.
 
-Shared styling is in `src/app/console.css`; dashboard and assistant styles are isolated in `dashboard.css` and `assistant.css`. Feature components live under `src/components/`; calculations, URL parsing, streaming, and alert rules live under `src/lib/`. There are no generic repositories, service containers, global stores, or chart frameworks layered over the libraries.
+Application code follows a feature-based structure:
+
+```text
+src/app/                    Routes, API entry points, and feature composition
+src/features/dashboard/     Dashboard UI, charts, URL parsing, and display models
+src/features/assistant/     Conversation UI, streaming, citations, and server handlers
+src/features/alerts/        Form, validation, and browser-local persistence
+src/shared/                 Reusable UI, market calculations, formatting, and contracts
+src/data/                   Canonical JSON and the dataset loader
+```
+
+`app/_components/MarketWorkspace` connects the features through shared contracts. Features do not import one another, and shared code does not import features or app composition. ESLint checks those boundaries and prevents frontend code from importing server modules or answer fixtures. Tests stay beside the code they verify.
+
+Shared styles are in `src/shared/styles.css`, shell styles are beside `Workspace`, and feature styles are colocated in each feature's `styles.css`. Component classes remain in local `UI` objects. The structure adds no state manager, service container, or custom chart framework.
 
 ## Data accuracy and trust
 
@@ -105,7 +118,7 @@ Automated axe checks cover WCAG 2.1 A/AA rules on the analyst view. Mobile overf
 
 The checks use behavioral assertions rather than snapshot collections or tests of chart-library internals. Strict typing, runtime event validation, safe plain-text rendering, shared metric calculations, feature boundaries, and focused branches are the main standards. Storybook, table virtualization, exhaustive browser matrices, and a real backend were deliberately deferred.
 
-The three branches have feature-specific changes: `feat/initial` is the shared foundation, `feat/dashboard` adds only dashboard features, and `feat/assistant` adds chat and its integration. Review dashboard against initial, and assistant against dashboard. Previous history is preserved in `dev`. See [the task ledger](docs/TASKS.md).
+The three branches have feature-specific changes: `feat/initial` is the shared foundation, `feat/dashboard` adds only dashboard features, and `feat/assistant` adds chat and its integration. Review dashboard against initial, and assistant against dashboard. Previous history is preserved in `dev`. Tests and documentation stay with the feature they cover.
 
 ## Production path
 
@@ -133,10 +146,10 @@ Map geometry is public-domain [Natural Earth](https://www.naturalearthdata.com/a
 
 ## Refactoring boundaries
 
-`MarketConsole` coordinates URL state and composes the workspace, header, summary, chart group, and priorities. `ConsoleWithAssistant` injects the assistant and its hint without making dashboard modules import chat logic. `Panel` and `DataTable` own shared presentation and accessibility markup. Market projections and comparison normalization are pure functions.
+`MarketWorkspace` composes the shell, dashboard, alerts, and assistant. It uses `useDashboardView` for URL selection and passes the selected view and callbacks to each feature. `MarketConsole` composes only dashboard headers, summaries, charts, and priorities. `Panel` and `DataTable` own shared presentation and accessibility markup. Market projections and comparison normalization are pure functions.
 
-`AlertForm` composes the form, `useAlertForm` owns input and validation, `useAlertRules` owns optimistic saving and rollback, and `SavedAlerts` owns rule display. For chat, `useChat` owns request lifetime and turn updates, `useChatScroll` owns scroll-follow behavior, and `ChatComposer` owns input. HTTP/SSE transport and citation resolution live in `src/lib`. These are feature-specific components and hooks, with no additional state or service framework.
+`AlertForm` composes the form, `useAlertForm` owns input and validation, `useAlertRules` owns optimistic saving and rollback, and `SavedAlerts` owns rule display. For chat, `useChat` owns request lifetime and turn updates, `useChatScroll` owns scroll-follow behavior, and `ChatComposer` owns input. HTTP/SSE transport and citation resolution live in `src/features/assistant`; the mock handler and fixture loader live in its `server` folder. `app/api/chat/route.ts` remains the thin HTTP entry point. These are feature-specific components and hooks, with no additional state or service framework.
 
-UI copy is grouped in feature `copy.ts` constants, while component classes and chart styles stay in local `UI` objects. Map bands, heat-map rows, and sortable market rows are prepared by pure helpers in `src/lib`. The map uses fixed percentage thresholds for growth and attainment; revenue uses five equal bands relative to the largest market in the selected scope. Derived chart values are calculated from the current selection rather than stored in extra React state.
+UI copy is grouped in feature `copy.ts` constants, while component classes and chart styles stay in local `UI` objects. Map bands, heat-map rows, and sortable market rows are prepared by pure helpers colocated in `src/features/dashboard`. The map uses fixed percentage thresholds for growth and attainment; revenue uses five equal bands relative to the largest market in the selected scope. Derived chart values are calculated from the current selection rather than stored in extra React state.
 
 Presentation messages format complete labels and sentences. History counts, currency labels, comparison limits, and heat-map legend bounds use the dataset and shared configuration. Derived chart models are memoized for local interactions, and market summaries group facts in one pass. Chart failures offer a retry while retaining the data table. The stream decoder checks complete and partial event sizes, reports malformed JSON consistently, and releases the reader on failure. Citation links preserve normal browser modifier-click behavior.
