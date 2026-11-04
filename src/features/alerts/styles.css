@@ -1,0 +1,129 @@
+.alert-details summary {
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--accent);
+  padding: 8px 0;
+}
+.alert-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin: 12px 0 18px;
+}
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--muted);
+}
+.form-field input {
+  padding: 9px;
+  font-size: 12px;
+}
+.condition-fields {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 14px 15px;
+}
+.condition-fields legend {
+  font-size: 11px;
+  padding: 0 5px;
+}
+.condition-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 0;
+  font-size: 11px;
+}
+.condition-row > label:first-child {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.condition-row input[type="checkbox"],
+.demo-failure input {
+  accent-color: var(--accent);
+  border-radius: 3px;
+}
+.threshold-input {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+}
+.threshold-input input {
+  padding: 6px 8px;
+  width: 85px;
+  font-size: 12px;
+}
+.match-field {
+  max-width: 250px;
+  margin-top: 10px;
+}
+.alert-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 16px 0;
+}
+.alert-actions button {
+  background: var(--accent);
+}
+.demo-failure {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  font-size: 10px;
+  color: var(--muted);
+}
+.field-error {
+  color: var(--danger);
+  font-size: 10px;
+  margin-top: 4px;
+}
+[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+.saved-alerts {
+  margin-top: 14px;
+}
+.saved-alerts ul {
+  list-style: none;
+}
+.saved-alerts li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 0;
+  border-top: 1px solid var(--line);
+}
+.saved-alerts strong {
+  font-size: 12px;
+  font-weight: 550;
+}
+.saved-alerts p {
+  font-size: 9px;
+  color: var(--muted);
+  margin-top: 4px;
+  line-height: 1.6;
+}
+.success-notice {
+  padding: 10px;
+  font-size: 11px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 6px;
+}
+@media (max-width: 480px) {
+  .condition-row {
+    align-items: flex-start;
+  }
+  .condition-row > label:first-child {
+    line-height: 1.6;
+  }
+}

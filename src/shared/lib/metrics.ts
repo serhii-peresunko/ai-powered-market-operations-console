@@ -1,15 +1,12 @@
-import type { Dataset, SeriesRow, Status } from "../types";
+import {
+  ALL_STATUSES,
+  type Dataset,
+  type SeriesRow,
+  type Scope,
+} from "../types";
 
-export const ALL_STATUSES = "all";
 const PERCENT_BASE = 100;
 const TEXT = { portfolio: "Portfolio" } as const;
-
-export interface Scope {
-  region?: string;
-  market?: string;
-  product?: string;
-  status?: typeof ALL_STATUSES | Status;
-}
 
 export function marketsInScope(data: Dataset, scope: Scope) {
   return data.markets.filter(

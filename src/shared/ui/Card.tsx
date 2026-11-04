@@ -5,7 +5,7 @@
 import React from "react";
 import { Slot } from "@radix-ui/react-slot";
 
-import { cx } from "@/shared/lib/utils";
+import { cx } from "../lib/utils";
 
 const UI = {
   root: cx(

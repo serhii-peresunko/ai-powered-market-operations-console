@@ -115,3 +115,42 @@ export function isAnswerKind(value: unknown): value is AnswerKind {
     value === ANSWER_KIND.ERROR
   );
 }
+
+export const ALL_STATUSES = "all";
+
+export interface Scope {
+  region?: string;
+  market?: string;
+  product?: string;
+  status?: typeof ALL_STATUSES | Status;
+}
+
+export const DASHBOARD_MODE = {
+  EXECUTIVE: "executive",
+  ANALYST: "analyst",
+} as const;
+export type DashboardMode =
+  (typeof DASHBOARD_MODE)[keyof typeof DASHBOARD_MODE];
+
+export const MAP_KPI = {
+  ATTAINMENT: "attainment",
+  GROWTH: "growth",
+  REVENUE: "revenue",
+} as const;
+export type MapKpi = (typeof MAP_KPI)[keyof typeof MAP_KPI];
+
+export function isMapKpi(value: unknown): value is MapKpi {
+  return (
+    value === MAP_KPI.ATTAINMENT ||
+    value === MAP_KPI.GROWTH ||
+    value === MAP_KPI.REVENUE
+  );
+}
+
+export interface DashboardView extends Scope {
+  period: string;
+  mode: DashboardMode;
+  mapKpi: MapKpi;
+  compare: string[];
+  status: typeof ALL_STATUSES | Status;
+}

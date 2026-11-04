@@ -22,6 +22,23 @@ const eslintConfig = defineConfig([
       ],
     },
   },
+  ...["dashboard", "alerts", "assistant"].map((feature, _, features) => ({
+    files: [`src/features/${feature}/**/*.{ts,tsx}`],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              regex: `^(?:@/|(?:\\.\\./)+)(?:app|(?:features/)?(?:${features.filter((name) => name !== feature).join("|")}))(?:/|$)`,
+              message:
+                "Compose features in app; import shared contracts instead of another feature's implementation.",
+            },
+          ],
+        },
+      ],
+    },
+  })),
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

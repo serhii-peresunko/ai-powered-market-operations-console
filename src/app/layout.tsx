@@ -3,7 +3,9 @@ import type { ReactNode } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "@/shared/styles.css";
-import "./dashboard.css";
+import "./_components/workspace.css";
+import "@/features/dashboard/styles.css";
+import "@/features/alerts/styles.css";
 import { APP_TEXT } from "./copy";
 
 const geistSans = Geist({

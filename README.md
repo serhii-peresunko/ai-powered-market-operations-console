@@ -25,7 +25,7 @@ Percentages are calculated from summed fact rows. Zero denominators are unavaila
 
 Charts provide numeric tables, keyboard navigation, non-color signals, and reduced-motion support. Recharts rendering failures preserve the accessible alternative. Automated axe and narrow-layout checks are included; a dedicated screen-reader audit remains future work.
 
-Shared tokens are in `src/app/console.css`; dashboard styles are in `src/app/dashboard.css`. Recharts is used for time-series/radar, bundled Natural Earth outlines for the map, and an HTML table for the heat map. No global state manager or external backend is needed.
+Shared tokens are in `src/shared/styles.css`; dashboard and alert styles are colocated in their feature folders. Recharts is used for time-series/radar, bundled Natural Earth outlines for the map, and an HTML table for the heat map. No global state manager or external backend is needed.
 
 Review this branch against `feat/initial`. See [the task boundaries](docs/TASKS.md). Hosting and observability are not configured; deploy to a Node.js-capable Next.js host and measure production performance before real users.
 
@@ -33,8 +33,10 @@ Natural Earth boundaries are public domain. Before submitting, add your own reas
 
 ## Refactoring boundaries
 
-`MarketConsole` coordinates URL state and composes the workspace, header, summary, chart group, and priorities. `Panel` and `DataTable` own common presentation and accessibility markup. Market filtering and projections live in `metrics.ts`; comparison entity resolution and radar normalization live in `comparisons.ts`.
+`app/_components/MarketWorkspace` composes the shell, dashboard, and alerts. `useDashboardView` manages URL selection, while `MarketConsole` composes dashboard headers, summaries, charts, and priorities. `Panel` and `DataTable` own common presentation and accessibility markup. Market filtering and projections live in `metrics.ts`; comparison entity resolution and radar normalization live in `comparisons.ts`.
 
-`AlertForm` composes the form, and `useAlertForm` owns input and validation. `useAlertRules` owns persistence, pending state, optimistic updates, and rollback. `SavedAlerts` renders the saved rules. The assistant is composed through a view-aware slot, so dashboard modules do not import assistant implementation.
+`AlertForm` composes the form, and `useAlertForm` owns input and validation. `useAlertRules` owns persistence, pending state, optimistic updates, and rollback. `SavedAlerts` renders the saved rules. Features use shared contracts and do not import one another; the app layer handles integration. ESLint checks imports across those boundaries.
 
-UI copy is grouped in feature `copy.ts` constants, while component classes and chart styles stay in local `UI` objects. Map bands, heat-map rows, and sortable market rows are prepared by pure helpers in `src/lib`. The map uses fixed percentage thresholds for growth and attainment; revenue uses five equal bands relative to the largest market in the selected scope. Derived chart values are calculated from the current selection rather than stored in extra React state.
+UI copy is grouped in feature `copy.ts` constants, while component classes and chart styles stay in local `UI` objects. Map bands, heat-map rows, and sortable market rows are prepared by pure helpers colocated in `src/features/dashboard`. The map uses fixed percentage thresholds for growth and attainment; revenue uses five equal bands relative to the largest market in the selected scope. Derived chart values are calculated from the current selection rather than stored in extra React state.
+
+Source ownership is explicit: `src/app` contains route entry points and composition, `src/features` contains dashboard and alerts, `src/shared` contains reusable UI, market calculations, and contracts, and `src/data` contains the canonical JSON. Tests stay beside the code they verify.
