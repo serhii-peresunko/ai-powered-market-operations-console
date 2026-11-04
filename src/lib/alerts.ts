@@ -2,9 +2,25 @@ import { z } from "zod";
 import type { Dataset } from "@/data/types";
 import { marketMetricsFor } from "./metrics";
 
+export const ALERT_SCOPE = {
+  PORTFOLIO: "portfolio",
+  REGION: "region",
+  MARKET: "market",
+} as const;
+
+export const ALERT_MATCH = {
+  ANY: "any",
+  ALL: "all",
+} as const;
+
+export const ALERT_METRIC = {
+  GROWTH: "growth",
+  ATTAINMENT: "attainment",
+} as const;
+
 export const alertThresholds = {
-  growth: { min: -100, max: 200 },
-  attainment: { min: 0, max: 200 },
+  [ALERT_METRIC.GROWTH]: { min: -100, max: 200 },
+  [ALERT_METRIC.ATTAINMENT]: { min: 0, max: 200 },
 } as const;
 
 export function alertSchema(data: Dataset) {
@@ -15,13 +31,17 @@ export function alertSchema(data: Dataset) {
         .trim()
         .min(3, "Use at least 3 characters.")
         .max(60, "Use at most 60 characters."),
-      scope: z.enum(["portfolio", "region", "market"]),
+      scope: z.enum([
+        ALERT_SCOPE.PORTFOLIO,
+        ALERT_SCOPE.REGION,
+        ALERT_SCOPE.MARKET,
+      ]),
       targetId: z.string(),
       growthEnabled: z.boolean(),
       growth: z.string(),
       attainmentEnabled: z.boolean(),
       attainment: z.string(),
-      match: z.enum(["any", "all"]),
+      match: z.enum([ALERT_MATCH.ANY, ALERT_MATCH.ALL]),
     })
     .superRefine((value, context) => {
       if (!value.growthEnabled && !value.attainmentEnabled)
@@ -31,10 +51,10 @@ export function alertSchema(data: Dataset) {
           message: "Enable at least one condition.",
         });
       if (
-        value.scope !== "portfolio" &&
-        !(value.scope === "region" ? data.regions : data.markets).some(
-          (item) => item.id === value.targetId,
-        )
+        value.scope !== ALERT_SCOPE.PORTFOLIO &&
+        !(
+          value.scope === ALERT_SCOPE.REGION ? data.regions : data.markets
+        ).some((item) => item.id === value.targetId)
       )
         context.addIssue({
           code: "custom",
@@ -42,8 +62,8 @@ export function alertSchema(data: Dataset) {
           message: `Select a valid ${value.scope}.`,
         });
       for (const [field, enabled] of [
-        ["growth", value.growthEnabled],
-        ["attainment", value.attainmentEnabled],
+        [ALERT_METRIC.GROWTH, value.growthEnabled],
+        [ALERT_METRIC.ATTAINMENT, value.attainmentEnabled],
       ] as const) {
         const { min, max } = alertThresholds[field];
         const number = Number(value[field]);
@@ -68,13 +88,13 @@ export type AlertRule = AlertInput & { id: string };
 export const alertStorageKey = "market-ops-alerts-v1";
 export const initialAlert: AlertInput = {
   name: "",
-  scope: "portfolio",
+  scope: ALERT_SCOPE.PORTFOLIO,
   targetId: "",
   growthEnabled: true,
   growth: "0",
   attainmentEnabled: true,
   attainment: "95",
-  match: "any",
+  match: ALERT_MATCH.ANY,
 };
 
 export function matchingMarkets(
@@ -83,8 +103,8 @@ export function matchingMarkets(
   period: string,
 ) {
   const scope = {
-    region: rule.scope === "region" ? rule.targetId : undefined,
-    market: rule.scope === "market" ? rule.targetId : undefined,
+    region: rule.scope === ALERT_SCOPE.REGION ? rule.targetId : undefined,
+    market: rule.scope === ALERT_SCOPE.MARKET ? rule.targetId : undefined,
   };
   return marketMetricsFor(data, scope, period)
     .filter((metrics) => {
@@ -101,7 +121,9 @@ export function matchingMarkets(
       ];
       return (
         matches.length > 0 &&
-        (rule.match === "all" ? matches.every(Boolean) : matches.some(Boolean))
+        (rule.match === ALERT_MATCH.ALL
+          ? matches.every(Boolean)
+          : matches.some(Boolean))
       );
     })
     .map(({ market }) => market);

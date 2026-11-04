@@ -2,7 +2,14 @@
 import { useState, type FormEvent } from "react";
 import type { Dataset } from "@/data/types";
 import { Button } from "@/components/Button";
-import { alertSchema, initialAlert, type AlertInput } from "@/lib/alerts";
+import {
+  alertSchema,
+  initialAlert,
+  type AlertInput,
+  ALERT_SCOPE,
+  ALERT_MATCH,
+  ALERT_METRIC,
+} from "@/lib/alerts";
 import { AlertThreshold } from "./AlertThreshold";
 
 const UI = {
@@ -87,21 +94,21 @@ export function AlertForm({
                 onChange={(event) => {
                   const scope = event.target.value;
                   if (
-                    scope === "portfolio" ||
-                    scope === "region" ||
-                    scope === "market"
+                    scope === ALERT_SCOPE.PORTFOLIO ||
+                    scope === ALERT_SCOPE.REGION ||
+                    scope === ALERT_SCOPE.MARKET
                   )
                     change({ scope, targetId: "" });
                 }}
               >
-                <option value="portfolio">All markets</option>
-                <option value="region">A region</option>
-                <option value="market">A market</option>
+                <option value={ALERT_SCOPE.PORTFOLIO}>All markets</option>
+                <option value={ALERT_SCOPE.REGION}>A region</option>
+                <option value={ALERT_SCOPE.MARKET}>A market</option>
               </select>
             </label>
-            {values.scope !== "portfolio" && (
+            {values.scope !== ALERT_SCOPE.PORTFOLIO && (
               <label className={UI.formField}>
-                {values.scope === "region" ? "Region" : "Market"}
+                {values.scope === ALERT_SCOPE.REGION ? "Region" : "Market"}
                 <select
                   id="alert-targetId"
                   value={values.targetId}
@@ -112,7 +119,7 @@ export function AlertForm({
                   }
                 >
                   <option value="">Choose {values.scope}…</option>
-                  {(values.scope === "region"
+                  {(values.scope === ALERT_SCOPE.REGION
                     ? data.regions
                     : data.markets
                   ).map((item) => (
@@ -135,7 +142,7 @@ export function AlertForm({
           >
             <legend>Flag a market when</legend>
             <AlertThreshold
-              field="growth"
+              field={ALERT_METRIC.GROWTH}
               label="Year-on-year growth is below"
               enabled={values.growthEnabled}
               value={values.growth}
@@ -144,7 +151,7 @@ export function AlertForm({
               onChange={(growth) => change({ growth })}
             />
             <AlertThreshold
-              field="attainment"
+              field={ALERT_METRIC.ATTAINMENT}
               label="Forecast attainment is below"
               enabled={values.attainmentEnabled}
               value={values.attainment}
@@ -159,11 +166,16 @@ export function AlertForm({
                 value={values.match}
                 onChange={(event) => {
                   const match = event.target.value;
-                  if (match === "any" || match === "all") change({ match });
+                  if (match === ALERT_MATCH.ANY || match === ALERT_MATCH.ALL)
+                    change({ match });
                 }}
               >
-                <option value="any">Any enabled condition (OR)</option>
-                <option value="all">All enabled conditions (AND)</option>
+                <option value={ALERT_MATCH.ANY}>
+                  Any enabled condition (OR)
+                </option>
+                <option value={ALERT_MATCH.ALL}>
+                  All enabled conditions (AND)
+                </option>
               </select>
             </label>
           </fieldset>

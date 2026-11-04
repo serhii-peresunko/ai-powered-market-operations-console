@@ -1,7 +1,8 @@
 import type { DashboardProps } from "./types";
 import { ViewControls } from "./ViewControls";
-import { scopeName } from "@/lib/metrics";
+import { scopeName, ALL_STATUSES } from "@/lib/metrics";
 import { periodLabel } from "@/lib/format";
+import { DASHBOARD_MODE } from "@/lib/view";
 
 const UI = {
   topbar: "topbar",
@@ -92,31 +93,31 @@ export function DashboardHeader({ data, view, update }: DashboardProps) {
       <div className={UI.audienceToolbar}>
         <div className={UI.modeSwitch} role="group" aria-label="Audience view">
           <button
-            aria-pressed={view.mode === "executive"}
-            onClick={() => update({ mode: "executive" })}
+            aria-pressed={view.mode === DASHBOARD_MODE.EXECUTIVE}
+            onClick={() => update({ mode: DASHBOARD_MODE.EXECUTIVE })}
           >
             Executive overview
           </button>
           <button
-            aria-pressed={view.mode === "analyst"}
-            onClick={() => update({ mode: "analyst" })}
+            aria-pressed={view.mode === DASHBOARD_MODE.ANALYST}
+            onClick={() => update({ mode: DASHBOARD_MODE.ANALYST })}
           >
             Analyst deep-dive
           </button>
         </div>
         <span>
-          {view.mode === "executive"
+          {view.mode === DASHBOARD_MODE.EXECUTIVE
             ? "Health, trends & priorities"
             : "Full metrics & every drill path"}
         </span>
       </div>
       <ViewControls data={data} view={view} update={update} />
-      {view.status !== "all" && (
+      {view.status !== ALL_STATUSES && (
         <p className={UI.activeFilter}>
           Latest status filter: {view.status.replaceAll("_", " ")}{" "}
           <button
             className={UI.textButton}
-            onClick={() => update({ status: "all" })}
+            onClick={() => update({ status: ALL_STATUSES })}
           >
             Clear filter
           </button>

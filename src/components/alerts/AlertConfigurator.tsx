@@ -3,7 +3,7 @@ import type { Dataset } from "@/data/types";
 import { Panel } from "@/components/Panel";
 import { AlertForm } from "./AlertForm";
 import { SavedAlerts } from "./SavedAlerts";
-import { useAlertRules } from "./useAlertRules";
+import { useAlertRules, ALERT_FEEDBACK } from "./useAlertRules";
 
 const UI = {
   fullWidth: "full-width",
@@ -33,9 +33,11 @@ export default function AlertConfigurator({
       {feedback && (
         <p
           className={
-            feedback.kind === "error" ? UI.errorNotice : UI.successNotice
+            feedback.kind === ALERT_FEEDBACK.ERROR
+              ? UI.errorNotice
+              : UI.successNotice
           }
-          role={feedback.kind === "error" ? "alert" : "status"}
+          role={feedback.kind === ALERT_FEEDBACK.ERROR ? "alert" : "status"}
         >
           {feedback.message}
         </p>
