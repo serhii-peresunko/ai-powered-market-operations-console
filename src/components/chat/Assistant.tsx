@@ -6,6 +6,19 @@ import { useChatScroll } from "./useChatScroll";
 import { ChatComposer } from "./ChatComposer";
 import { Conversation } from "./Conversation";
 
+const UI = {
+  assistantPanel: "assistant-panel",
+  assistantHeading: "assistant-heading",
+  assistantSymbol: "assistant-symbol",
+  demoBadge: "demo-badge",
+  conversationScroll: "conversation-scroll",
+  srOnly: "sr-only",
+  assistantFootnote: "assistant-footnote",
+  assistantEmpty: "assistant-empty",
+  welcomeSymbol: "welcome-symbol",
+  suggestedQuestions: "suggested-questions",
+} as const;
+
 export function Assistant(context: AssistantContext) {
   const chat = useChat();
   const { container: scrollRef, onScroll, resume } = useChatScroll(chat.turns);
@@ -16,20 +29,24 @@ export function Assistant(context: AssistantContext) {
   return (
     <aside
       id="assistant"
-      className="assistant-panel"
+      className={UI.assistantPanel}
       aria-labelledby="assistant-title"
     >
-      <header className="assistant-heading">
-        <span className="assistant-symbol">
+      <header className={UI.assistantHeading}>
+        <span className={UI.assistantSymbol}>
           <RiSparklingLine size={21} aria-hidden="true" />
         </span>
         <div>
           <h2 id="assistant-title">Market assistant</h2>
           <p>AI-generated interpretation</p>
         </div>
-        <span className="demo-badge">DEMO</span>
+        <span className={UI.demoBadge}>DEMO</span>
       </header>
-      <div ref={scrollRef} className="conversation-scroll" onScroll={onScroll}>
+      <div
+        ref={scrollRef}
+        className={UI.conversationScroll}
+        onScroll={onScroll}
+      >
         {chat.turns.length === 0 ? (
           <AssistantWelcome onAsk={ask} />
         ) : (
@@ -41,7 +58,7 @@ export function Assistant(context: AssistantContext) {
           />
         )}
       </div>
-      <div className="sr-only" role="status">
+      <div className={UI.srOnly} role="status">
         {chat.busy
           ? "Assistant is generating a response."
           : chat.turns.length
@@ -49,7 +66,7 @@ export function Assistant(context: AssistantContext) {
             : "Assistant ready."}
       </div>
       <ChatComposer busy={chat.busy} onAsk={ask} onStop={chat.stop} />
-      <p id="chat-help" className="assistant-footnote">
+      <p id="chat-help" className={UI.assistantFootnote}>
         Fixture-based demo · Verify AI claims against source data.
       </p>
     </aside>
@@ -58,8 +75,8 @@ export function Assistant(context: AssistantContext) {
 
 function AssistantWelcome({ onAsk }: { onAsk: (question: string) => void }) {
   return (
-    <div className="assistant-empty">
-      <span className="welcome-symbol">
+    <div className={UI.assistantEmpty}>
+      <span className={UI.welcomeSymbol}>
         <RiSparklingLine size={30} aria-hidden="true" />
       </span>
       <h3>
@@ -72,7 +89,7 @@ function AssistantWelcome({ onAsk }: { onAsk: (question: string) => void }) {
         <br />
         Follow the evidence behind every answer.
       </p>
-      <div className="suggested-questions">
+      <div className={UI.suggestedQuestions}>
         {[
           "Which markets are at risk?",
           "Why did Germany's revenue dip?",

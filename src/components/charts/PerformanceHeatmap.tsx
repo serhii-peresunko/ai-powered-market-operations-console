@@ -5,13 +5,35 @@ import { Panel } from "@/components/Panel";
 import { marketsInScope, trendFor } from "@/lib/metrics";
 import { percent, periodLabel } from "@/lib/format";
 
+const UI = {
+  cells: {
+    unavailable: { background: "#edf1ef", color: "#61737a" },
+    severeMiss: { background: "#a94c56", color: "#fff" },
+    belowPlan: { background: "#f0d8d1", color: "#81373c" },
+    nearPlan: { background: "#edf1e9", color: "#4c6258" },
+    abovePlan: { background: "#c9e3d1", color: "#255b46" },
+    ahead: { background: "#33785c", color: "#fff" },
+  },
+  swatch: (background: string) => ({ background }),
+  fullWidth: "full-width",
+  countChip: "count-chip",
+  heatmapScroll: "heatmap-scroll table-scroll",
+  heatmap: "heatmap",
+  srOnly: "sr-only",
+  selectedCell: "heatmap-cell selected",
+  heatmapCell: "heatmap-cell",
+  emptyPanel: "empty-panel",
+  mapLegend: "map-legend",
+  chartCredit: "chart-credit",
+} as const;
+
 function cellColors(variance: number | null) {
-  if (variance === null) return { background: "#edf1ef", color: "#61737a" };
-  if (variance <= -10) return { background: "#a94c56", color: "#fff" };
-  if (variance < -2) return { background: "#f0d8d1", color: "#81373c" };
-  if (variance <= 2) return { background: "#edf1e9", color: "#4c6258" };
-  if (variance < 10) return { background: "#c9e3d1", color: "#255b46" };
-  return { background: "#33785c", color: "#fff" };
+  if (variance === null) return UI.cells.unavailable;
+  if (variance <= -10) return UI.cells.severeMiss;
+  if (variance < -2) return UI.cells.belowPlan;
+  if (variance <= 2) return UI.cells.nearPlan;
+  if (variance < 10) return UI.cells.abovePlan;
+  return UI.cells.ahead;
 }
 
 export default function PerformanceHeatmap({
@@ -72,10 +94,10 @@ export default function PerformanceHeatmap({
       id="heatmap"
       title="Forecast variance by market"
       eyebrow="FIND THE PATTERN"
-      className="full-width"
+      className={UI.fullWidth}
       action={
         <>
-          <span className="count-chip">24 months</span>
+          <span className={UI.countChip}>24 months</span>
         </>
       }
       description={
@@ -88,13 +110,17 @@ export default function PerformanceHeatmap({
       descriptionId="heatmap-help"
     >
       <div
-        className="heatmap-scroll table-scroll"
+        className={UI.heatmapScroll}
         tabIndex={0}
         role="region"
         aria-label="Forecast variance heat map and data table"
       >
-        <table ref={table} className="heatmap" aria-describedby="heatmap-help">
-          <caption className="sr-only">
+        <table
+          ref={table}
+          className={UI.heatmap}
+          aria-describedby="heatmap-help"
+        >
+          <caption className={UI.srOnly}>
             Signed forecast variance percentages, by market and month. Numeric
             values are the accessible alternative to the diverging colors.
           </caption>
@@ -130,9 +156,7 @@ export default function PerformanceHeatmap({
                       <button
                         style={cellColors(variance)}
                         data-cell={`${row}-${col}`}
-                        className={
-                          selected ? "heatmap-cell selected" : "heatmap-cell"
-                        }
+                        className={selected ? UI.selectedCell : UI.heatmapCell}
                         tabIndex={
                           row === focusRow && col === focused.col ? 0 : -1
                         }
@@ -161,29 +185,29 @@ export default function PerformanceHeatmap({
         </table>
       </div>
       {rows.length === 0 && (
-        <p className="empty-panel">No markets match the current filters.</p>
+        <p className={UI.emptyPanel}>No markets match the current filters.</p>
       )}
-      <div className="map-legend">
+      <div className={UI.mapLegend}>
         <span>
-          <i style={{ background: "#a94c56" }} />≤ −10%
+          <i style={UI.swatch(UI.cells.severeMiss.background)} />≤ −10%
         </span>
         <span>
-          <i style={{ background: "#f0d8d1" }} />
+          <i style={UI.swatch(UI.cells.belowPlan.background)} />
           −10% to −2%
         </span>
         <span>
-          <i style={{ background: "#edf1e9" }} />
+          <i style={UI.swatch(UI.cells.nearPlan.background)} />
           Within ±2%
         </span>
         <span>
-          <i style={{ background: "#c9e3d1" }} />
+          <i style={UI.swatch(UI.cells.abovePlan.background)} />
           +2% to +10%
         </span>
         <span>
-          <i style={{ background: "#33785c" }} />≥ +10%
+          <i style={UI.swatch(UI.cells.ahead.background)} />≥ +10%
         </span>
       </div>
-      <p className="chart-credit">
+      <p className={UI.chartCredit}>
         Cells show rounded percentages; accessible labels and hover text retain
         one decimal place.
       </p>

@@ -3,12 +3,29 @@ import { ViewControls } from "./ViewControls";
 import { scopeName } from "@/lib/metrics";
 import { periodLabel } from "@/lib/format";
 
+const UI = {
+  topbar: "topbar",
+  breadcrumbs: "breadcrumbs",
+  sourcePill: "source-pill",
+  pageHeading: "page-heading",
+  eyebrow: "eyebrow",
+  secondaryText: "secondary-text",
+  periodStamp: "period-stamp",
+  sourceNote: "source-note",
+  sourceDot: "source-dot",
+  sourceNoteEnd: "source-note-end",
+  audienceToolbar: "audience-toolbar",
+  modeSwitch: "mode-switch",
+  activeFilter: "active-filter",
+  textButton: "text-button",
+} as const;
+
 export function DashboardHeader({ data, view, update }: DashboardProps) {
   const period = view.period;
   return (
     <>
-      <div className="topbar">
-        <nav aria-label="Drill path" className="breadcrumbs">
+      <div className={UI.topbar}>
+        <nav aria-label="Drill path" className={UI.breadcrumbs}>
           <button
             onClick={() =>
               update({
@@ -47,33 +64,33 @@ export function DashboardHeader({ data, view, update }: DashboardProps) {
             </>
           )}
         </nav>
-        <span className="source-pill">
+        <span className={UI.sourcePill}>
           <span aria-hidden="true">●</span> Canonical dataset
         </span>
       </div>
-      <header className="page-heading">
+      <header className={UI.pageHeading}>
         <div>
-          <p className="eyebrow">YOUR PORTFOLIO, IN FOCUS</p>
+          <p className={UI.eyebrow}>YOUR PORTFOLIO, IN FOCUS</p>
           <h1 id="dashboard-heading" tabIndex={-1}>
             {scopeName(data, view)} overview
           </h1>
-          <p className="secondary-text">
+          <p className={UI.secondaryText}>
             The signals that matter. The context to act.
           </p>
         </div>
-        <div className="period-stamp">
+        <div className={UI.periodStamp}>
           <span>REPORTING PERIOD</span>
           <strong>{periodLabel(period)}</strong>
         </div>
       </header>
-      <div className="source-note">
-        <span className="source-dot" aria-hidden="true" />
+      <div className={UI.sourceNote}>
+        <span className={UI.sourceDot} aria-hidden="true" />
         Source data · {periodLabel(period)} · All revenue in{" "}
         {data.meta.currency}
-        <span className="source-note-end">Synthetic assignment dataset</span>
+        <span className={UI.sourceNoteEnd}>Synthetic assignment dataset</span>
       </div>
-      <div className="audience-toolbar">
-        <div className="mode-switch" role="group" aria-label="Audience view">
+      <div className={UI.audienceToolbar}>
+        <div className={UI.modeSwitch} role="group" aria-label="Audience view">
           <button
             aria-pressed={view.mode === "executive"}
             onClick={() => update({ mode: "executive" })}
@@ -95,10 +112,10 @@ export function DashboardHeader({ data, view, update }: DashboardProps) {
       </div>
       <ViewControls data={data} view={view} update={update} />
       {view.status !== "all" && (
-        <p className="active-filter">
+        <p className={UI.activeFilter}>
           Latest status filter: {view.status.replaceAll("_", " ")}{" "}
           <button
-            className="text-button"
+            className={UI.textButton}
             onClick={() => update({ status: "all" })}
           >
             Clear filter

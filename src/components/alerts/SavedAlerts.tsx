@@ -2,6 +2,12 @@ import type { Dataset } from "@/data/types";
 import { matchingMarkets, type AlertRule } from "@/lib/alerts";
 import { periodLabel } from "@/lib/format";
 
+const UI = {
+  savedAlerts: "saved-alerts",
+  panelDescription: "panel-description",
+  countChip: "count-chip",
+} as const;
+
 export function SavedAlerts({
   data,
   period,
@@ -15,12 +21,12 @@ export function SavedAlerts({
 }) {
   return (
     <div
-      className="saved-alerts"
+      className={UI.savedAlerts}
       aria-live="polite"
       aria-label="Saved alert rules"
     >
       {rules.length === 0 ? (
-        <p className="panel-description">
+        <p className={UI.panelDescription}>
           No saved rules. Configure one to start watching your markets.
         </p>
       ) : (
@@ -50,7 +56,7 @@ export function SavedAlerts({
                     .join(rule.match === "any" ? " OR " : " AND ")}
                 </p>
               </div>
-              <span className="count-chip">
+              <span className={UI.countChip}>
                 {pendingId === rule.id
                   ? "Saving…"
                   : `${matchingMarkets(data, rule, period).length} matching markets`}

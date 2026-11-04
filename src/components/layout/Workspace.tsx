@@ -7,6 +7,22 @@ import {
   RiSparklingLine,
 } from "@remixicon/react";
 
+const UI = {
+  workspaceWithAssistant: "workspace with-assistant",
+  workspace: "workspace",
+  skipLink: "skip-link",
+  workspaceNav: "workspace-nav",
+  brand: "brand",
+  brandMark: "brand-mark",
+  brandLight: "brand-light",
+  navCaption: "nav-caption",
+  activeNavLink: "nav-link active",
+  navLink: "nav-link",
+  navCount: "nav-count",
+  navFooter: "nav-footer",
+  avatar: "avatar",
+} as const;
+
 export function Workspace({
   marketCount,
   assistant,
@@ -17,46 +33,46 @@ export function Workspace({
   children: ReactNode;
 }) {
   return (
-    <div className={assistant ? "workspace with-assistant" : "workspace"}>
-      <a href="#dashboard" className="skip-link">
+    <div className={assistant ? UI.workspaceWithAssistant : UI.workspace}>
+      <a href="#dashboard" className={UI.skipLink}>
         Skip to dashboard
       </a>
-      <aside className="workspace-nav" aria-label="Workspace navigation">
-        <Link href="/" className="brand" title="Market operations home">
-          <span className="brand-mark">
+      <aside className={UI.workspaceNav} aria-label="Workspace navigation">
+        <Link href="/" className={UI.brand} title="Market operations home">
+          <span className={UI.brandMark}>
             <RiBarChartBoxLine size={23} aria-hidden="true" />
           </span>
           <span>
-            market<span className="brand-light">ops</span>
+            market<span className={UI.brandLight}>ops</span>
             <small>PORTFOLIO INTELLIGENCE</small>
           </span>
         </Link>
-        <p className="nav-caption">WORKSPACE</p>
+        <p className={UI.navCaption}>WORKSPACE</p>
         <a
           href="#dashboard"
           title="Overview"
-          className="nav-link active"
+          className={UI.activeNavLink}
           aria-current="page"
         >
           <RiDashboardLine size={19} aria-hidden="true" />
           <span>Overview</span>
         </a>
-        <a href="#market-detail" title="Markets" className="nav-link">
+        <a href="#market-detail" title="Markets" className={UI.navLink}>
           <RiGlobalLine size={19} aria-hidden="true" />
           <span>Markets</span>
-          <span className="nav-count" aria-hidden="true">
+          <span className={UI.navCount} aria-hidden="true">
             {marketCount}
           </span>
         </a>
 
         {assistant && (
-          <a href="#assistant" title="Assistant" className="nav-link">
+          <a href="#assistant" title="Assistant" className={UI.navLink}>
             <RiSparklingLine size={19} aria-hidden="true" />
             <span>Assistant</span>
           </a>
         )}
-        <div className="nav-footer">
-          <span className="avatar">MO</span>
+        <div className={UI.navFooter}>
+          <span className={UI.avatar}>MO</span>
           <div>
             Commercial operations<small>Demo workspace · USD</small>
           </div>

@@ -17,6 +17,25 @@ import type { DashboardView } from "@/lib/view";
 import { scopeName, trendFor } from "@/lib/metrics";
 import { money, periodLabel } from "@/lib/format";
 
+const UI = {
+  margin: { left: 3, right: 12, top: 12, bottom: 0 },
+  grid: { vertical: false, stroke: "#e9eeeb", strokeDasharray: "3 3" },
+  axisTick: { fontSize: 9, fill: "#61737a" },
+  tooltip: { borderRadius: 8, borderColor: "#e1e8e8", fontSize: 11 },
+  selectedPeriod: { stroke: "#597b70", strokeDasharray: "2 4" },
+  priorYear: { stroke: "#9a8558", strokeWidth: 1.5, strokeDasharray: "2 4" },
+  forecast: { stroke: "#647c95", strokeWidth: 1.5, strokeDasharray: "6 4" },
+  actual: { stroke: "#087f71", strokeWidth: 2.5, activeDot: { r: 4 } },
+  fullWidth: "full-width",
+  countChip: "count-chip",
+  chartLegend: "chart-legend",
+  legendActual: "legend-actual",
+  legendForecast: "legend-forecast",
+  legendPrior: "legend-prior",
+  trendChart: "trend-chart",
+  tableLink: "table-link",
+} as const;
+
 export default function RevenueTrend({
   data,
   view,
@@ -32,10 +51,10 @@ export default function RevenueTrend({
       id="trend"
       title="Revenue trajectory"
       eyebrow="PERFORMANCE OVER TIME"
-      className="full-width"
+      className={UI.fullWidth}
       action={
         <>
-          <span className="count-chip">24 months · {data.meta.currency}</span>
+          <span className={UI.countChip}>24 months · {data.meta.currency}</span>
         </>
       }
       description={
@@ -45,41 +64,33 @@ export default function RevenueTrend({
         </>
       }
     >
-      <div className="chart-legend">
+      <div className={UI.chartLegend}>
         <span>
-          <i className="legend-actual" />
+          <i className={UI.legendActual} />
           Actual
         </span>
         <span>
-          <i className="legend-forecast" />
+          <i className={UI.legendForecast} />
           Forecast
         </span>
         <span>
-          <i className="legend-prior" />
+          <i className={UI.legendPrior} />
           Prior year
         </span>
       </div>
       <ChartBoundary>
         <div
-          className="trend-chart"
+          className={UI.trendChart}
           role="group"
           aria-label="Revenue over 24 months; use arrow keys to explore or open the data table below."
         >
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={points}
-              margin={{ left: 3, right: 12, top: 12, bottom: 0 }}
-              accessibilityLayer
-            >
-              <CartesianGrid
-                vertical={false}
-                stroke="#e9eeeb"
-                strokeDasharray="3 3"
-              />
+            <LineChart data={points} margin={UI.margin} accessibilityLayer>
+              <CartesianGrid {...UI.grid} />
               <XAxis
                 dataKey="period"
                 tickFormatter={(period: string) => periodLabel(period, true)}
-                tick={{ fontSize: 9, fill: "#61737a" }}
+                tick={UI.axisTick}
                 axisLine={false}
                 tickLine={false}
                 minTickGap={28}
@@ -88,7 +99,7 @@ export default function RevenueTrend({
                 tickFormatter={(value: number) =>
                   money(value, data.meta.currency)
                 }
-                tick={{ fontSize: 9, fill: "#61737a" }}
+                tick={UI.axisTick}
                 width={60}
                 axisLine={false}
                 tickLine={false}
@@ -102,24 +113,14 @@ export default function RevenueTrend({
                     ? money(value, data.meta.currency, false)
                     : "Unavailable"
                 }
-                contentStyle={{
-                  borderRadius: 8,
-                  borderColor: "#e1e8e8",
-                  fontSize: 11,
-                }}
+                contentStyle={UI.tooltip}
               />
-              <ReferenceLine
-                x={view.period}
-                stroke="#597b70"
-                strokeDasharray="2 4"
-              />
+              <ReferenceLine x={view.period} {...UI.selectedPeriod} />
               <Line
                 type="monotone"
                 dataKey="priorYear"
                 name="Prior year"
-                stroke="#9a8558"
-                strokeWidth={1.5}
-                strokeDasharray="2 4"
+                {...UI.priorYear}
                 dot={false}
                 isAnimationActive={false}
               />
@@ -127,9 +128,7 @@ export default function RevenueTrend({
                 type="monotone"
                 dataKey="forecast"
                 name="Forecast"
-                stroke="#647c95"
-                strokeWidth={1.5}
-                strokeDasharray="6 4"
+                {...UI.forecast}
                 dot={false}
                 isAnimationActive={false}
               />
@@ -137,10 +136,8 @@ export default function RevenueTrend({
                 type="monotone"
                 dataKey="actual"
                 name="Actual"
-                stroke="#087f71"
-                strokeWidth={2.5}
+                {...UI.actual}
                 dot={false}
-                activeDot={{ r: 4 }}
                 isAnimationActive={false}
               />
             </LineChart>
@@ -170,7 +167,7 @@ export default function RevenueTrend({
             <tr key={point.period} aria-selected={point.period === view.period}>
               <th scope="row">
                 <button
-                  className="table-link"
+                  className={UI.tableLink}
                   onClick={() => onPeriod(point.period)}
                 >
                   {periodLabel(point.period)}
