@@ -2,6 +2,7 @@
 import dynamic from "next/dynamic";
 import { MarketTable } from "./MarketTable";
 import type { DashboardProps } from "./types";
+import { DASHBOARD_MODE } from "@/lib/view";
 const UI = {
   chartLoading: "chart-loading",
 } as const;
@@ -44,7 +45,7 @@ export function DashboardCharts({ data, view, update }: DashboardProps) {
         view={view}
         onPeriod={(period) => update({ period })}
       />
-      {view.mode === "analyst" && (
+      {view.mode === DASHBOARD_MODE.ANALYST && (
         <>
           <MarketMap data={data} view={view} update={update} />
           <ComparisonRadar data={data} view={view} update={update} />

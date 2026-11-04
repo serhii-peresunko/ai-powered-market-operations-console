@@ -1,4 +1,4 @@
-import { alertThresholds } from "@/lib/alerts";
+import { alertThresholds, ALERT_METRIC } from "@/lib/alerts";
 
 const UI = {
   conditionRow: "condition-row",
@@ -39,7 +39,7 @@ export function AlertThreshold({
         </label>
         <label className={UI.thresholdInput}>
           <span className={UI.srOnly}>
-            {field === "growth" ? "Growth" : "Attainment"} threshold
+            {field === ALERT_METRIC.GROWTH ? "Growth" : "Attainment"} threshold
           </span>
           <input
             id={`alert-${field}`}

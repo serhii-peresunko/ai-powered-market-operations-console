@@ -1,10 +1,12 @@
 import type { Dataset, SeriesRow, Status } from "../data/types";
 
+export const ALL_STATUSES = "all";
+
 export interface Scope {
   region?: string;
   market?: string;
   product?: string;
-  status?: "all" | Status;
+  status?: typeof ALL_STATUSES | Status;
 }
 
 export function marketsInScope(data: Dataset, scope: Scope) {
@@ -13,7 +15,7 @@ export function marketsInScope(data: Dataset, scope: Scope) {
       (!scope.region || market.regionId === scope.region) &&
       (!scope.market || market.id === scope.market) &&
       (!scope.status ||
-        scope.status === "all" ||
+        scope.status === ALL_STATUSES ||
         market.kpis.status === scope.status),
   );
 }

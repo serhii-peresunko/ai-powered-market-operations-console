@@ -7,7 +7,13 @@ import { marketMetricsFor, metricsFor } from "@/lib/metrics";
 import { money, percent, periodLabel } from "@/lib/format";
 import { StatusBadge } from "./StatusBadge";
 
-type SortKey = "actual" | "growth" | "attainment" | "gap";
+const SORT_KEY = {
+  REVENUE: "actual",
+  GROWTH: "growth",
+  ATTAINMENT: "attainment",
+  GAP: "gap",
+} as const;
+type SortKey = (typeof SORT_KEY)[keyof typeof SORT_KEY];
 const UI = {
   sortButton: "sort-button",
   fullWidth: "full-width",
@@ -20,7 +26,7 @@ const UI = {
 
 export function MarketTable({ data, view, update }: DashboardProps) {
   const [sort, setSort] = useState<{ key: SortKey; ascending: boolean }>({
-    key: "actual",
+    key: SORT_KEY.REVENUE,
     ascending: false,
   });
   const selectedMarket = data.markets.find(
@@ -120,11 +126,11 @@ export function MarketTable({ data, view, update }: DashboardProps) {
           <tr>
             <th scope="col">{selectedMarket ? "Product" : "Market"}</th>
             {!selectedMarket && <th scope="col">Region</th>}
-            {heading("actual", "Revenue")}
+            {heading(SORT_KEY.REVENUE, "Revenue")}
             <th scope="col">Forecast</th>
-            {heading("gap", "Variance")}
-            {heading("growth", "Growth")}
-            {heading("attainment", "Attainment")}
+            {heading(SORT_KEY.GAP, "Variance")}
+            {heading(SORT_KEY.GROWTH, "Growth")}
+            {heading(SORT_KEY.ATTAINMENT, "Attainment")}
             <th scope="col">Units</th>
             {!selectedMarket && (
               <>

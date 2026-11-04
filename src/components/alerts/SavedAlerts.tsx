@@ -1,5 +1,10 @@
 import type { Dataset } from "@/data/types";
-import { matchingMarkets, type AlertRule } from "@/lib/alerts";
+import {
+  matchingMarkets,
+  type AlertRule,
+  ALERT_SCOPE,
+  ALERT_MATCH,
+} from "@/lib/alerts";
 import { periodLabel } from "@/lib/format";
 
 const UI = {
@@ -36,14 +41,14 @@ export function SavedAlerts({
               <div>
                 <strong>{rule.name}</strong>
                 <p>
-                  {rule.scope === "portfolio"
+                  {rule.scope === ALERT_SCOPE.PORTFOLIO
                     ? "All markets"
-                    : (rule.scope === "region"
+                    : (rule.scope === ALERT_SCOPE.REGION
                         ? data.regions
                         : data.markets
                       ).find((item) => item.id === rule.targetId)?.name}{" "}
-                  · {rule.match === "any" ? "Any" : "All"} enabled conditions ·{" "}
-                  {periodLabel(period)}
+                  · {rule.match === ALERT_MATCH.ANY ? "Any" : "All"} enabled
+                  conditions · {periodLabel(period)}
                 </p>
                 <p>
                   {[
@@ -53,7 +58,7 @@ export function SavedAlerts({
                       : "",
                   ]
                     .filter(Boolean)
-                    .join(rule.match === "any" ? " OR " : " AND ")}
+                    .join(rule.match === ALERT_MATCH.ANY ? " OR " : " AND ")}
                 </p>
               </div>
               <span className={UI.countChip}>
