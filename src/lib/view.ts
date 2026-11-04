@@ -1,14 +1,36 @@
 import type { Dataset, Status } from "@/data/types";
 import { isStatus } from "@/data/types";
-import type { Scope } from "./metrics";
+import { ALL_STATUSES, type Scope } from "./metrics";
 import { comparisonEntities } from "./comparisons";
+
+export const DASHBOARD_MODE = {
+  EXECUTIVE: "executive",
+  ANALYST: "analyst",
+} as const;
+export type DashboardMode =
+  (typeof DASHBOARD_MODE)[keyof typeof DASHBOARD_MODE];
+
+export const MAP_KPI = {
+  ATTAINMENT: "attainment",
+  GROWTH: "growth",
+  REVENUE: "revenue",
+} as const;
+export type MapKpi = (typeof MAP_KPI)[keyof typeof MAP_KPI];
+
+export function isMapKpi(value: unknown): value is MapKpi {
+  return (
+    value === MAP_KPI.ATTAINMENT ||
+    value === MAP_KPI.GROWTH ||
+    value === MAP_KPI.REVENUE
+  );
+}
 
 export interface DashboardView extends Scope {
   period: string;
-  mode: "executive" | "analyst";
-  mapKpi: "attainment" | "growth" | "revenue";
+  mode: DashboardMode;
+  mapKpi: MapKpi;
   compare: string[];
-  status: "all" | Status;
+  status: typeof ALL_STATUSES | Status;
 }
 
 export function readView(
@@ -34,9 +56,12 @@ export function readView(
       period && data.meta.periods.includes(period)
         ? period
         : data.meta.latestPeriod,
-    mode: params.get("mode") === "analyst" ? "analyst" : "executive",
-    mapKpi: mapKpi === "growth" || mapKpi === "revenue" ? mapKpi : "attainment",
-    status: isStatus(status) ? status : "all",
+    mode:
+      params.get("mode") === DASHBOARD_MODE.ANALYST
+        ? DASHBOARD_MODE.ANALYST
+        : DASHBOARD_MODE.EXECUTIVE,
+    mapKpi: isMapKpi(mapKpi) ? mapKpi : MAP_KPI.ATTAINMENT,
+    status: isStatus(status) ? status : ALL_STATUSES,
     compare:
       compare === null
         ? ["region:eu", "region:apac"]
@@ -57,6 +82,6 @@ export function viewParams(view: DashboardView) {
   params.set("mode", view.mode);
   params.set("kpi", view.mapKpi);
   params.set("compare", view.compare.join(","));
-  if (view.status !== "all") params.set("status", view.status);
+  if (view.status !== ALL_STATUSES) params.set("status", view.status);
   return params;
 }

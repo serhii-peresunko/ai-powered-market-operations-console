@@ -8,11 +8,16 @@ import {
   type AlertRule,
 } from "@/lib/alerts";
 
+export const ALERT_FEEDBACK = {
+  SUCCESS: "success",
+  ERROR: "error",
+} as const;
+
 export function useAlertRules(data: Dataset) {
   const [rules, setRules] = useState<AlertRule[]>(() => readAlerts(data));
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{
-    kind: "success" | "error";
+    kind: (typeof ALERT_FEEDBACK)[keyof typeof ALERT_FEEDBACK];
     message: string;
   } | null>(null);
   const inFlight = useRef(false);
@@ -27,11 +32,14 @@ export function useAlertRules(data: Dataset) {
     setPendingId(rule.id);
     try {
       await saveAlert(rule, previous, simulateFailure);
-      setFeedback({ kind: "success", message: "Alert saved in this browser." });
+      setFeedback({
+        kind: ALERT_FEEDBACK.SUCCESS,
+        message: "Alert saved in this browser.",
+      });
     } catch (error) {
       setRules(previous);
       setFeedback({
-        kind: "error",
+        kind: ALERT_FEEDBACK.ERROR,
         message:
           error instanceof Error
             ? error.message

@@ -3,6 +3,7 @@ import {
   isConfidence,
   type ChatEvent,
   type Citation,
+  CHAT_EVENT_TYPE,
 } from "@/data/types";
 
 export const MAX_QUESTION_LENGTH = 1000;
@@ -37,19 +38,19 @@ function isCitation(value: unknown): value is Citation {
 export function parseChatEvent(value: unknown): ChatEvent {
   if (value && typeof value === "object" && "type" in value) {
     if (
-      value.type === "token" &&
+      value.type === CHAT_EVENT_TYPE.TOKEN &&
       "value" in value &&
       typeof value.value === "string"
     )
-      return { type: "token", value: value.value };
+      return { type: CHAT_EVENT_TYPE.TOKEN, value: value.value };
     if (
-      value.type === "error" &&
+      value.type === CHAT_EVENT_TYPE.ERROR &&
       "message" in value &&
       typeof value.message === "string"
     )
-      return { type: "error", message: value.message };
+      return { type: CHAT_EVENT_TYPE.ERROR, message: value.message };
     if (
-      value.type === "done" &&
+      value.type === CHAT_EVENT_TYPE.DONE &&
       "kind" in value &&
       isAnswerKind(value.kind) &&
       "confidence" in value &&
@@ -59,7 +60,7 @@ export function parseChatEvent(value: unknown): ChatEvent {
       value.citations.every(isCitation)
     ) {
       return {
-        type: "done",
+        type: CHAT_EVENT_TYPE.DONE,
         kind: value.kind,
         confidence: value.confidence,
         citations: value.citations,
@@ -95,9 +96,10 @@ export async function consumeChat(
           .join("\n");
         if (!payload) continue;
         const event = parseChatEvent(JSON.parse(payload) as unknown);
-        if (event.type === "error") throw new Error(event.message);
+        if (event.type === CHAT_EVENT_TYPE.ERROR)
+          throw new Error(event.message);
         onEvent(event);
-        if (event.type === "done") return;
+        if (event.type === CHAT_EVENT_TYPE.DONE) return;
       }
       if (buffer.length > 100_000)
         throw new Error("Assistant event exceeded the supported size.");

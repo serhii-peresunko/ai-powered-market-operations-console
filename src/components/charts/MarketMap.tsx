@@ -6,11 +6,12 @@ import { DataTable } from "@/components/DataTable";
 import world from "@/data/world-map.json";
 import { marketMetricsFor } from "@/lib/metrics";
 import { money, percent, periodLabel } from "@/lib/format";
+import { MAP_KPI, isMapKpi } from "@/lib/view";
 
 const metricLabels = {
-  attainment: "Forecast attainment",
-  growth: "Year-on-year growth",
-  revenue: "Revenue",
+  [MAP_KPI.ATTAINMENT]: "Forecast attainment",
+  [MAP_KPI.GROWTH]: "Year-on-year growth",
+  [MAP_KPI.REVENUE]: "Revenue",
 };
 
 const UI = {
@@ -39,17 +40,17 @@ export default function MarketMap({ data, view, update }: DashboardProps) {
   ).map((metrics) => ({
     market: metrics.market,
     value:
-      view.mapKpi === "revenue"
+      view.mapKpi === MAP_KPI.REVENUE
         ? metrics.actual
-        : view.mapKpi === "growth"
+        : view.mapKpi === MAP_KPI.GROWTH
           ? metrics.growth
           : metrics.attainment,
   }));
   const maximum = Math.max(1, ...values.map((item) => item.value ?? 0));
   const thresholds =
-    view.mapKpi === "attainment"
+    view.mapKpi === MAP_KPI.ATTAINMENT
       ? [90, 97, 100, 105]
-      : view.mapKpi === "growth"
+      : view.mapKpi === MAP_KPI.GROWTH
         ? [0, 5, 10, 15]
         : [maximum * 0.2, maximum * 0.4, maximum * 0.6, maximum * 0.8];
   const color = (value: number | null) =>
@@ -59,9 +60,9 @@ export default function MarketMap({ data, view, update }: DashboardProps) {
   const format = (value: number | null) =>
     value === null
       ? "Unavailable"
-      : view.mapKpi === "revenue"
+      : view.mapKpi === MAP_KPI.REVENUE
         ? money(value, data.meta.currency)
-        : percent(value, view.mapKpi === "growth");
+        : percent(value, view.mapKpi === MAP_KPI.GROWTH);
   const choose = (market: (typeof data.markets)[number]) =>
     update({ region: market.regionId, market: market.id });
   const active =
@@ -81,12 +82,7 @@ export default function MarketMap({ data, view, update }: DashboardProps) {
               value={view.mapKpi}
               onChange={(event) => {
                 const value = event.target.value;
-                if (
-                  value === "attainment" ||
-                  value === "growth" ||
-                  value === "revenue"
-                )
-                  update({ mapKpi: value });
+                if (isMapKpi(value)) update({ mapKpi: value });
               }}
             >
               {Object.entries(metricLabels).map(([key, label]) => (

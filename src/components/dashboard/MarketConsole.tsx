@@ -1,7 +1,7 @@
 "use client";
 import type { ReactNode } from "react";
 import dynamic from "next/dynamic";
-import type { Dataset } from "@/data/types";
+import { type Dataset, MARKET_STATUS } from "@/data/types";
 import type { DashboardView } from "@/lib/view";
 import { marketMetricsFor, metricsFor } from "@/lib/metrics";
 import { Workspace } from "@/components/layout/Workspace";
@@ -38,7 +38,7 @@ export function MarketConsole({
   const metrics = metricsFor(data, view, view.period);
   const rows = marketMetricsFor(data, view, view.period);
   const risks = rows
-    .filter(({ market }) => market.kpis.status !== "on_track")
+    .filter(({ market }) => market.kpis.status !== MARKET_STATUS.ON_TRACK)
     .map(({ market }) => market);
   const selectedMarket = data.markets.find(
     (market) => market.id === view.market,
