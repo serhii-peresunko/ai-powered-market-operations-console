@@ -87,3 +87,52 @@ describe("metrics", () => {
     expect(total).toBe(metricsFor(data, {}, data.meta.latestPeriod).actual);
   });
 });
+
+describe("sparse facts", () => {
+  it("retains scoped markets that have no matching facts", () => {
+    const input = {
+      ...data,
+      series: data.series.filter((row) => row.marketId === "de"),
+    };
+    const rows = marketMetricsFor(
+      input,
+      { region: "eu" },
+      data.meta.latestPeriod,
+    );
+    expect(rows.map((row) => row.market.id)).toEqual(
+      data.markets
+        .filter((market) => market.regionId === "eu")
+        .map((market) => market.id),
+    );
+    expect(rows.find((row) => row.market.id === "fr")).toMatchObject({
+      actual: 0,
+      forecast: 0,
+      priorYear: 0,
+      units: 0,
+      growth: null,
+      attainment: null,
+      gap: 0,
+    });
+    expect(rows.find((row) => row.market.id === "de")).toMatchObject(
+      metricsFor(input, { market: "de" }, data.meta.latestPeriod),
+    );
+  });
+
+  it("retains reporting periods that have no matching facts", () => {
+    const [missingPeriod, populatedPeriod] = data.meta.periods;
+    const input = {
+      ...data,
+      series: data.series.filter((row) => row.period === populatedPeriod),
+    };
+    const points = trendFor(input, { region: "eu", product: "veltrix" });
+    expect(points.map((point) => point.period)).toEqual(data.meta.periods);
+    expect(
+      points.find((point) => point.period === missingPeriod),
+    ).toMatchObject({ actual: 0, growth: null, attainment: null });
+    expect(
+      points.find((point) => point.period === populatedPeriod),
+    ).toMatchObject(
+      metricsFor(input, { region: "eu", product: "veltrix" }, populatedPeriod),
+    );
+  });
+});

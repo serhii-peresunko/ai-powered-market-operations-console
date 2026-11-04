@@ -4,7 +4,7 @@ import { isStatus, MARKET_STATUS } from "@/data/types";
 import { periodLabel } from "@/lib/format";
 import { DASHBOARD_MODE } from "@/lib/view";
 import { ALL_STATUSES } from "@/lib/metrics";
-import { VIEW_CONTROLS_TEXT as TEXT } from "./copy";
+import { STATUS_LABELS, VIEW_CONTROLS_TEXT as TEXT } from "./copy";
 
 const UI = {
   viewControls: "view-controls",
@@ -92,9 +92,15 @@ export function ViewControls({ data, view, update }: DashboardProps) {
             }}
           >
             <option value={ALL_STATUSES}>{TEXT.allStatuses}</option>
-            <option value={MARKET_STATUS.ON_TRACK}>{TEXT.onTrack}</option>
-            <option value={MARKET_STATUS.AT_RISK}>{TEXT.atRisk}</option>
-            <option value={MARKET_STATUS.OFF_TRACK}>{TEXT.offTrack}</option>
+            <option value={MARKET_STATUS.ON_TRACK}>
+              {STATUS_LABELS[MARKET_STATUS.ON_TRACK]}
+            </option>
+            <option value={MARKET_STATUS.AT_RISK}>
+              {STATUS_LABELS[MARKET_STATUS.AT_RISK]}
+            </option>
+            <option value={MARKET_STATUS.OFF_TRACK}>
+              {STATUS_LABELS[MARKET_STATUS.OFF_TRACK]}
+            </option>
           </select>
         </label>
       )}

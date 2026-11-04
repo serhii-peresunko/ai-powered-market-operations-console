@@ -49,12 +49,11 @@ export function MarketPriorities({
         action={
           <>
             <span className={UI.countChip}>
-              {risks.length}
-              {TEXT.markets}
+              {TEXT.marketCount(risks.length)}
             </span>
           </>
         }
-        description={<>{TEXT.riskDescription}</>}
+        description={TEXT.riskDescription}
       >
         <div className={UI.riskList}>
           {risks.length === 0 && <p className={UI.emptyPanel}>{TEXT.empty}</p>}
@@ -89,7 +88,7 @@ export function MarketPriorities({
         action={<RiArrowRightUpLine size={20} aria-hidden="true" />}
         title={TEXT.largestForecastGaps}
         eyebrow={TEXT.moversEyebrow}
-        description={<>{TEXT.moversDescription}</>}
+        description={TEXT.moversDescription}
       >
         <div className={UI.moversList}>
           {movers.map(({ market, gap, attainment }) => (
@@ -105,10 +104,7 @@ export function MarketPriorities({
                 }
               >
                 <strong>{market.name}</strong>
-                <span>
-                  {percent(attainment)}
-                  {TEXT.ofForecast}
-                </span>
+                <span>{TEXT.attainment(percent(attainment))}</span>
               </button>
               <strong className={gap >= 0 ? UI.positive : UI.negative}>
                 {gap > 0 ? TEXT.positive : ""}
