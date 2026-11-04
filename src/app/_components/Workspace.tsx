@@ -1,11 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import {
-  RiBarChartBoxLine,
-  RiDashboardLine,
-  RiGlobalLine,
-  RiSparklingLine,
-} from "@remixicon/react";
+import { RiBarChartBoxLine, RiDashboardLine } from "@remixicon/react";
 import { WORKSPACE_TEXT as TEXT } from "./workspace-copy";
 
 const UI = {
@@ -18,19 +13,15 @@ const UI = {
   brandLight: "brand-light",
   navCaption: "nav-caption",
   activeNavLink: "nav-link active",
-  navLink: "nav-link",
-  navCount: "nav-count",
   navFooter: "nav-footer",
   avatar: "avatar",
 } as const;
 
 export function Workspace({
-  marketCount,
   currency,
   assistant,
   children,
 }: {
-  marketCount: number;
   currency: string;
   assistant?: ReactNode;
   children: ReactNode;
@@ -61,20 +52,6 @@ export function Workspace({
           <RiDashboardLine size={19} aria-hidden="true" />
           <span>{TEXT.overview}</span>
         </a>
-        <a href="#market-detail" title={TEXT.markets} className={UI.navLink}>
-          <RiGlobalLine size={19} aria-hidden="true" />
-          <span>{TEXT.markets}</span>
-          <span className={UI.navCount} aria-hidden="true">
-            {marketCount}
-          </span>
-        </a>
-
-        {assistant && (
-          <a href="#assistant" title={TEXT.assistant} className={UI.navLink}>
-            <RiSparklingLine size={19} aria-hidden="true" />
-            <span>{TEXT.assistant}</span>
-          </a>
-        )}
         <div className={UI.navFooter}>
           <span className={UI.avatar}>{TEXT.mo}</span>
           <div>

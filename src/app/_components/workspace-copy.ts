@@ -7,8 +7,6 @@ export const WORKSPACE_TEXT = {
   portfolioIntelligence: "PORTFOLIO INTELLIGENCE",
   workspace: "WORKSPACE",
   overview: "Overview",
-  markets: "Markets",
-  assistant: "Assistant",
   mo: "MO",
   commercialOperations: "Commercial operations",
   demoWorkspace: (currency: string) => `Demo workspace · ${currency}`,

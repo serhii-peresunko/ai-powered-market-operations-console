@@ -25,6 +25,7 @@
   position: sticky;
   top: 0;
   height: 100dvh;
+  overflow-y: auto;
 }
 .brand {
   display: flex;
@@ -79,11 +80,6 @@
   color: #fff;
   background: #2a4c4d;
   box-shadow: inset 3px 0 #8bd5b8;
-}
-.nav-count {
-  margin-left: auto;
-  font-size: 10px;
-  color: #bad2cc;
 }
 .nav-footer {
   margin-top: auto;
