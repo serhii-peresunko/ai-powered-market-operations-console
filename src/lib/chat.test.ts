@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { ChatEvent } from "@/data/types";
 import { consumeChat, parseChatEvent } from "./chat";
 
@@ -53,5 +53,56 @@ describe("SSE consumption", () => {
     expect(() =>
       parseChatEvent({ ...final, citations: [{ marketId: 3 }] }),
     ).toThrow();
+  });
+});
+
+describe("stream failure recovery", () => {
+  it("reports malformed JSON as a readable response error", async () => {
+    await expect(
+      consumeChat(
+        stream([new TextEncoder().encode("data: broken\n\n")]),
+        () => undefined,
+      ),
+    ).rejects.toThrow("The assistant returned an invalid event. Please retry.");
+  });
+
+  it("rejects oversized complete frames before delivering them and cancels the source", async () => {
+    const input = new TextEncoder().encode(
+      `data: ${JSON.stringify({ type: "token", value: "x".repeat(100_001) })}\n\n`,
+    );
+    const cancel = vi.fn();
+    const events = vi.fn();
+    const source = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(input);
+      },
+      cancel,
+    });
+    await expect(consumeChat(source, events)).rejects.toThrow(
+      "Assistant event exceeded the supported size.",
+    );
+    expect(events).not.toHaveBeenCalled();
+    expect(cancel).toHaveBeenCalledOnce();
+  });
+
+  it("rejects oversized unterminated frames", async () => {
+    await expect(
+      consumeChat(
+        stream([new TextEncoder().encode("data: " + "x".repeat(100_001))]),
+        () => undefined,
+      ),
+    ).rejects.toThrow("Assistant event exceeded the supported size.");
+  });
+
+  it("accepts large network chunks containing individually valid frames", async () => {
+    const token = { type: "token", value: "x".repeat(1000) };
+    const chunk = new TextEncoder().encode(
+      `data: ${JSON.stringify(token)}\n\n`.repeat(110) +
+        `data: ${JSON.stringify(final)}\n\n`,
+    );
+    const events: ChatEvent[] = [];
+    await consumeChat(stream([chunk]), (event) => events.push(event));
+    expect(events).toHaveLength(111);
+    expect(events.at(-1)).toEqual(final);
   });
 });

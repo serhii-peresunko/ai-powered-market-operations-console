@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { Market } from "@/data/types";
 import type { DashboardProps } from "@/components/dashboard/types";
 import { Panel } from "@/components/Panel";
@@ -23,7 +23,10 @@ const UI = {
 
 export default function MarketMap({ data, view, update }: DashboardProps) {
   const [hoveredMarket, setHoveredMarket] = useState<string | null>(null);
-  const { rows, legend } = marketMapData(data, view);
+  const { rows, legend } = useMemo(
+    () => marketMapData(data, view),
+    [data, view],
+  );
   const metricLabel = TEXT.metrics[view.mapKpi];
   const period = periodLabel(view.period);
   const active =

@@ -62,11 +62,7 @@ export function AlertScopeFields({
               errors.targetId ? "alert-targetId-error" : undefined
             }
           >
-            <option value="">
-              {TEXT.choose}
-              {values.scope}
-              {TEXT.ellipsis}
-            </option>
+            <option value="">{TEXT.chooseTarget(values.scope)}</option>
             {(values.scope === ALERT_SCOPE.REGION
               ? data.regions
               : data.markets

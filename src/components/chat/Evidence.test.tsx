@@ -68,3 +68,46 @@ describe("answer evidence", () => {
     ).toBeNull();
   });
 });
+
+it("preserves browser navigation for modified citation clicks", () => {
+  const navigate = vi.fn();
+  render(
+    <Evidence
+      data={data}
+      view={view}
+      onNavigate={navigate}
+      completion={{
+        type: "done",
+        kind: "normal",
+        confidence: "high",
+        citations: [
+          { marketId: "de", productId: "veltrix", period: "2026-03" },
+        ],
+      }}
+    />,
+  );
+  const link = screen.getByRole("link", {
+    name: /Germany · Veltrix · Mar 2026/,
+  });
+  for (const modifiers of [
+    { metaKey: true },
+    { ctrlKey: true },
+    { shiftKey: true },
+    { altKey: true },
+  ]) {
+    let intercepted = true;
+    // Observe React's handling before preventing JSDOM's native navigation.
+    document.addEventListener(
+      "click",
+      (event) => {
+        intercepted = event.defaultPrevented;
+        event.preventDefault();
+      },
+      { once: true },
+    );
+    fireEvent.click(link, modifiers);
+    expect(intercepted).toBe(false);
+  }
+  expect(navigate).not.toHaveBeenCalled();
+  expect(link).toHaveAttribute("href", expect.stringContaining("market=de"));
+});

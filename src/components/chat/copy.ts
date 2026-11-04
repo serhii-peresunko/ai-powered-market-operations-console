@@ -1,3 +1,11 @@
+import { CONFIDENCE, type Confidence } from "@/data/types";
+
+const CONFIDENCE_LABELS = {
+  [CONFIDENCE.HIGH]: "High",
+  [CONFIDENCE.MEDIUM]: "Medium",
+  [CONFIDENCE.LOW]: "Low",
+} satisfies Record<Confidence, string>;
+
 export const ASSISTANT_TEXT = {
   prompts: [
     "Which markets are at risk?",
@@ -33,9 +41,9 @@ export const CONVERSATION_TEXT = {
 export const EVIDENCE_TEXT = {
   highConfidenceIcon: "●",
   otherConfidenceIcon: "◐",
-  confidenceLabels: { high: "High", medium: "Medium", low: "Low" },
+  confidenceLabel: (confidence: Confidence) =>
+    `${CONFIDENCE_LABELS[confidence]} confidence`,
   failure: "The response failed. Treat any text above as incomplete.",
-  confidence: "confidence",
   metadataHint:
     "Provided by the mock answer fixture; not a calibrated probability.",
   fixtureMetadata: "Fixture metadata",
@@ -43,10 +51,10 @@ export const EVIDENCE_TEXT = {
     "Cannot answer from the provided data. No forecast has been generated.",
   uncertainty:
     "Directional interpretation. The available evidence does not support a precise conclusion.",
-  verifyInSourceData: "VERIFY IN SOURCE DATA ",
+  verifyInSourceData: "VERIFY IN SOURCE DATA",
   citationIcon: "↗",
-  sourceUnavailable: "Source unavailable:",
-  unresolvedCitation: "Unresolved citation",
+  sourceUnavailable: (label?: string) =>
+    `Source unavailable: ${label ?? "Unresolved citation"}`,
   sourceNote:
     "Cited evidence supports this answer; it may cover a subset of the portfolio.",
   noCitations: "No source citations were provided.",

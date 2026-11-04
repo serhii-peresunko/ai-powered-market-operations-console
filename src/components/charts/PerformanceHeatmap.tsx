@@ -1,5 +1,6 @@
 "use client";
 import type { DashboardProps } from "@/components/dashboard/types";
+import { useMemo } from "react";
 import { useHeatmapNavigation } from "./useHeatmapNavigation";
 import { Panel } from "@/components/Panel";
 import { heatmapRows } from "@/lib/heatmap";
@@ -32,7 +33,7 @@ export default function PerformanceHeatmap({
   view,
   update,
 }: DashboardProps) {
-  const rows = heatmapRows(data, view);
+  const rows = useMemo(() => heatmapRows(data, view), [data, view]);
   const { table, focused, setFocused, move } = useHeatmapNavigation(
     rows.length,
     data.meta.periods.length,
@@ -46,10 +47,12 @@ export default function PerformanceHeatmap({
       className={UI.fullWidth}
       action={
         <>
-          <span className={UI.countChip}>{TEXT.history}</span>
+          <span className={UI.countChip}>
+            {TEXT.history(data.meta.periods.length)}
+          </span>
         </>
       }
-      description={<>{TEXT.description}</>}
+      description={TEXT.description}
       descriptionId="heatmap-help"
     >
       <div
@@ -110,26 +113,12 @@ export default function PerformanceHeatmap({
       </div>
       {rows.length === 0 && <p className={UI.emptyPanel}>{TEXT.empty}</p>}
       <div className={UI.mapLegend}>
-        <span>
-          <i style={UI.swatch(UI.cells.severeMiss.background)} />
-          {TEXT.severeMiss}
-        </span>
-        <span>
-          <i style={UI.swatch(UI.cells.belowPlan.background)} />
-          {TEXT.belowPlan}
-        </span>
-        <span>
-          <i style={UI.swatch(UI.cells.nearPlan.background)} />
-          {TEXT.nearPlan}
-        </span>
-        <span>
-          <i style={UI.swatch(UI.cells.abovePlan.background)} />
-          {TEXT.abovePlan}
-        </span>
-        <span>
-          <i style={UI.swatch(UI.cells.ahead.background)} />
-          {TEXT.ahead}
-        </span>
+        {TEXT.legend.map(({ band, label }) => (
+          <span key={band}>
+            <i style={UI.swatch(UI.cells[band].background)} />
+            {label}
+          </span>
+        ))}
       </div>
       <p className={UI.chartCredit}>{TEXT.roundingNote}</p>
     </Panel>

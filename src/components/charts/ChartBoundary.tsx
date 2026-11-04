@@ -1,5 +1,6 @@
 "use client";
 import { Component, type ReactNode } from "react";
+import { Button } from "@/components/Button";
 import { CHART_BOUNDARY_TEXT as TEXT } from "./copy";
 
 const UI = {
@@ -16,9 +17,15 @@ export class ChartBoundary extends Component<
   }
   render() {
     return this.state.failed ? (
-      <p className={UI.notice} role="alert">
-        {TEXT.failure}
-      </p>
+      <div className={UI.notice} role="alert">
+        <p>{TEXT.failure}</p>
+        <Button
+          variant="secondary"
+          onClick={() => this.setState({ failed: false })}
+        >
+          {TEXT.retry}
+        </Button>
+      </div>
     ) : (
       this.props.children
     );

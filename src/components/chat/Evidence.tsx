@@ -29,7 +29,7 @@ export function Evidence({
           {completion.confidence === CONFIDENCE.HIGH
             ? TEXT.highConfidenceIcon
             : TEXT.otherConfidenceIcon}{" "}
-          {TEXT.confidenceLabels[completion.confidence]} {TEXT.confidence}
+          {TEXT.confidenceLabel(completion.confidence)}
         </span>
         <span title={TEXT.metadataHint}>{TEXT.fixtureMetadata}</span>
       </div>
@@ -43,8 +43,7 @@ export function Evidence({
       {completion.citations.length > 0 ? (
         <>
           <h3 className={UI.evidenceHeading}>
-            {TEXT.verifyInSourceData}
-            <span>{completion.citations.length}</span>
+            {TEXT.verifyInSourceData} <span>{completion.citations.length}</span>
           </h3>
           <CitationList
             data={data}

@@ -1,16 +1,25 @@
+import { ALERT_MATCH, ALERT_METRIC, type AlertInput } from "@/lib/alerts";
+
 export const SAVED_ALERTS_TEXT = {
-  growthCondition: (value: string) => `Growth < ${value}%`,
-  attainmentCondition: (value: string) => `Attainment < ${value}%`,
+  conditions: (rule: AlertInput) =>
+    [
+      rule.growthEnabled ? `Growth < ${rule.growth}%` : "",
+      rule.attainmentEnabled ? `Attainment < ${rule.attainment}%` : "",
+    ]
+      .filter(Boolean)
+      .join(rule.match === ALERT_MATCH.ANY ? " OR " : " AND "),
+  description: (
+    scope: string | undefined,
+    match: AlertInput["match"],
+    period: string,
+  ) =>
+    `${scope ?? ""} · ${match === ALERT_MATCH.ANY ? "Any" : "All"} enabled conditions · ${period}`,
   matches: (count: number) => `${count} matching markets`,
-  or: " OR ",
-  and: " AND ",
+
   savedAlertRules: "Saved alert rules",
   empty: "No saved rules. Configure one to start watching your markets.",
   allMarkets: "All markets",
-  separator: "· ",
-  any: "Any",
-  all: "All",
-  enabledConditions: " enabled conditions · ",
+
   saving: "Saving…",
 } as const;
 
@@ -33,8 +42,7 @@ export const ALERT_FORM_TEXT = {
   aMarket: "A market",
   region: "Region",
   market: "Market",
-  choose: "Choose ",
-  ellipsis: "…",
+  chooseTarget: (scope: string) => `Choose ${scope}…`,
   flagAMarketWhen: "Flag a market when",
   yearOnYearGrowthIsBelow: "Year-on-year growth is below",
   forecastAttainmentIsBelow: "Forecast attainment is below",
@@ -47,8 +55,7 @@ export const ALERT_FORM_TEXT = {
 } as const;
 
 export const ALERT_THRESHOLD_TEXT = {
-  growth: "Growth",
-  attainment: "Attainment",
-  threshold: " threshold",
+  thresholdLabel: (field: (typeof ALERT_METRIC)[keyof typeof ALERT_METRIC]) =>
+    field === ALERT_METRIC.GROWTH ? "Growth threshold" : "Attainment threshold",
   percentSign: "%",
 } as const;

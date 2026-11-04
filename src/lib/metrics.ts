@@ -65,17 +65,35 @@ export function metricsFor(data: Dataset, scope: Scope, period: string) {
 export type Metrics = ReturnType<typeof summarize>;
 
 export function marketMetricsFor(data: Dataset, scope: Scope, period: string) {
-  return marketsInScope(data, scope).map((market) => ({
+  const markets = marketsInScope(data, scope);
+  const rowsByMarket = new Map(
+    markets.map((market) => [market.id, [] as SeriesRow[]]),
+  );
+  // Visit the facts once, rather than scanning all facts for every market.
+  for (const row of data.series) {
+    if (
+      row.period === period &&
+      (!scope.product || row.productId === scope.product)
+    ) {
+      rowsByMarket.get(row.marketId)?.push(row);
+    }
+  }
+  return markets.map((market) => ({
     market,
-    ...metricsFor(data, { market: market.id, product: scope.product }, period),
+    ...summarize(rowsByMarket.get(market.id) ?? []),
   }));
 }
 
 export function trendFor(data: Dataset, scope: Scope) {
-  const rows = seriesInScope(data, scope);
+  const rowsByPeriod = new Map(
+    data.meta.periods.map((period) => [period, [] as SeriesRow[]]),
+  );
+  for (const row of seriesInScope(data, scope)) {
+    rowsByPeriod.get(row.period)?.push(row);
+  }
   return data.meta.periods.map((period) => ({
     period,
-    ...summarize(rows.filter((row) => row.period === period)),
+    ...summarize(rowsByPeriod.get(period) ?? []),
   }));
 }
 
