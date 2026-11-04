@@ -1,5 +1,10 @@
 import type { ReactNode } from "react";
 
+const UI = {
+  tableScroll: "table-scroll",
+  dataAlternative: "data-alternative",
+} as const;
+
 export function DataTable({
   label,
   caption,
@@ -12,7 +17,12 @@ export function DataTable({
   children: ReactNode;
 }) {
   const table = (
-    <div className="table-scroll" tabIndex={0} role="region" aria-label={label}>
+    <div
+      className={UI.tableScroll}
+      tabIndex={0}
+      role="region"
+      aria-label={label}
+    >
       <table>
         <caption>{caption}</caption>
         {children}
@@ -20,7 +30,7 @@ export function DataTable({
     </div>
   );
   return summary ? (
-    <details className="data-alternative">
+    <details className={UI.dataAlternative}>
       <summary>{summary}</summary>
       {table}
     </details>

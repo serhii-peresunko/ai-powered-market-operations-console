@@ -1,6 +1,10 @@
+const UI = {
+  loadingState: "loading-state",
+} as const;
+
 export default function Loading() {
   return (
-    <main className="loading-state" role="status">
+    <main className={UI.loadingState} role="status">
       Loading market operations…
     </main>
   );

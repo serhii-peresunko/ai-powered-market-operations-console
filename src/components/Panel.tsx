@@ -2,6 +2,13 @@ import type { ReactNode } from "react";
 import { Card } from "./Card";
 import { cx } from "@/lib/utils";
 
+const UI = {
+  panel: "panel",
+  panelHeading: "panel-heading",
+  eyebrow: "eyebrow",
+  panelDescription: "panel-description",
+} as const;
+
 export function Panel({
   id,
   title,
@@ -26,19 +33,19 @@ export function Panel({
   return (
     <Card
       id={id}
-      className={cx("panel", className)}
+      className={cx(UI.panel, className)}
       role="region"
       aria-labelledby={titleId}
     >
-      <div className="panel-heading">
+      <div className={UI.panelHeading}>
         <div>
-          <p className="eyebrow">{eyebrow}</p>
+          <p className={UI.eyebrow}>{eyebrow}</p>
           <h2 id={titleId}>{title}</h2>
         </div>
         {action}
       </div>
       {description && (
-        <p id={descriptionId} className="panel-description">
+        <p id={descriptionId} className={UI.panelDescription}>
           {description}
         </p>
       )}

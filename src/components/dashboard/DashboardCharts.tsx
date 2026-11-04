@@ -2,9 +2,13 @@
 import dynamic from "next/dynamic";
 import { MarketTable } from "./MarketTable";
 import type { DashboardProps } from "./types";
+const UI = {
+  chartLoading: "chart-loading",
+} as const;
+
 function ChartLoading({ label }: { label: string }) {
   return (
-    <div className="chart-loading" role="status">
+    <div className={UI.chartLoading} role="status">
       {label}
     </div>
   );
