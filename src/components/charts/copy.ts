@@ -33,13 +33,14 @@ export const PERFORMANCE_HEATMAP_TEXT = {
     variance: string,
     anomaly?: string,
   ) =>
-    `${value}${anomaly ? "*" : ""} percent; ${market}, ${period}: ${variance} forecast variance${anomaly ? `. Market anomaly: ${anomaly}` : ""}`,
+    `${value}${anomaly !== undefined ? "*" : ""} percent; ${market}, ${period}: ${variance} forecast variance${anomaly !== undefined ? `. Market anomaly: ${anomaly}` : ""}`,
   cellTitle: (
     market: string,
     period: string,
     variance: string,
     anomaly?: string,
-  ) => `${market} · ${period} · ${variance}${anomaly ? ` · ${anomaly}` : ""}`,
+  ) =>
+    `${market} · ${period} · ${variance}${anomaly !== undefined ? ` · ${anomaly}` : ""}`,
   title: "Forecast variance by market",
   eyebrow: "FIND THE PATTERN",
   history: "24 months",
@@ -98,6 +99,7 @@ export const MARKET_MAP_TEXT = {
 } as const;
 
 export const REVENUE_TREND_TEXT = {
+  selected: " · Selected",
   title: "Revenue trajectory",
   eyebrow: "PERFORMANCE OVER TIME",
   history: "24 months · ",

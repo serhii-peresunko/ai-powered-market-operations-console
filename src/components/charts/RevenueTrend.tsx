@@ -179,7 +179,7 @@ export default function RevenueTrend({
                   onClick={() => onPeriod(point.period)}
                 >
                   {periodLabel(point.period)}
-                  {point.period === view.period ? " · Selected" : ""}
+                  {point.period === view.period ? TEXT.selected : ""}
                 </button>
               </th>
               <td>{money(point.actual, data.meta.currency, false)}</td>
