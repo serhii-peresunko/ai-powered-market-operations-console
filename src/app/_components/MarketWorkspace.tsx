@@ -23,7 +23,6 @@ export function MarketWorkspace({ data }: { data: Dataset }) {
   }
   return (
     <Workspace
-      marketCount={data.markets.length}
       currency={data.meta.currency}
       assistant={
         <Assistant data={data} view={view} onNavigate={openCitation} />

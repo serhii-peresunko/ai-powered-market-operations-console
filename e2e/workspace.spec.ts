@@ -28,8 +28,6 @@ for (const viewport of [
       .toBeCloseTo(0, 0);
     expect((await menu.boundingBox())?.height).toBe(viewport.height);
 
-    await menu.getByRole("link", { name: "Markets", exact: true }).click();
-    await expect(page.locator("#market-detail")).toBeInViewport();
     await menu.getByRole("link", { name: "Overview", exact: true }).click();
     await expect(
       page.getByRole("heading", { name: "Portfolio overview" }),
