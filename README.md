@@ -1,155 +1,152 @@
 # Market Operations Console
 
-A front-end take-home implementation: a source-data dashboard and a fixture-backed streaming assistant. No real model, authentication service, database, or external market-data service is used.
+A front-end take-home project for exploring market performance and checking answers from a streaming assistant. The dashboard uses the supplied market data. The assistant uses fixed answer fixtures served through a real API route.
 
-## Run locally
+## Setup
 
-Use Node.js 24 and npm.
+Use **Node.js 24** and npm, matching the CI environment. Run these commands from the repository root:
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Open http://localhost:3000. No environment variables or API keys are required.
+Open [localhost:3000](http://localhost:3000). No environment variables, API keys, database, or separate backend process are required.
+
+To run a production build locally, stop the development server and run:
 
 ```sh
-npm run lint
-npm run typecheck
-npm test
 npm run build
 npm run start
 ```
 
-For browser tests:
+### Checks
+
+```sh
+npx next typegen
+npm run typecheck
+npm run lint
+npm test
+```
+
+`next typegen` generates the route types needed by TypeScript on a fresh checkout. `npm run test:watch` runs unit and integration tests in watch mode.
+
+For browser tests against a production build:
 
 ```sh
 npx playwright install chromium
-npm run test:e2e
+npm run build
+CI=true npm run test:e2e
 ```
 
-Browser tests start their own server on port 3010. To test a production build, run `npm run build`, then `CI=true npm run test:e2e`.
+Playwright starts and stops its own server on port **3010**. Keep that port free. On Linux, use `npx playwright install --with-deps chromium` if browser system dependencies are missing.
 
-## Try the application
+`npm run test:e2e` without `CI=true` uses a development server instead. Stop any other development server for this checkout first, because Next.js allows one development server per project.
 
-1. Start in **Executive overview** for portfolio health, the revenue trend, risks, and movers.
-2. Switch to **Analyst deep-dive** for the country map, radar comparison, forecast heat map, and sortable detail table.
-3. Choose a region, market, product, or period. Country selection, heat-map cells, breadcrumbs, and table links share the same URL state. Reload and back/forward preserve that view.
-4. Ask **“Why did Germany's revenue dip?”**. Watch the answer stream, then follow the Germany / Veltrix / March 2026 citation into the dashboard.
-5. Open **Configure an alert**. Save a rule, then enable **Simulate save failure** to inspect optimistic saving and rollback.
+## Try it
 
-Other useful prompts: **“Compare APAC and Europe”**, **“What's driving the forecast miss?”**, **“Forecast next year”**, **“full summary”**, and **“force error”**. The fixtures match keywords in order; unsupported questions use the supplied low-confidence fallback.
+1. Start with **Executive overview** for revenue, growth, forecast attainment, and markets to watch.
+2. Switch to **Analyst deep-dive** for the country map, comparison radar, forecast heat map, and detailed tables.
+3. Select a region, market, product, or reporting period. Reload or use back/forward to check that the URL preserves the selection.
+4. Ask **“Why did Germany's revenue dip?”** and follow a citation back to its dashboard scope and period.
+5. Open **Configure an alert**, save a rule, then enable **Simulate save failure** to try rollback and retry.
 
-## Architecture and state
+Other assistant prompts include **“Compare APAC and Europe”**, **“Forecast next year”**, **“full summary”**, and **“force error”**. Answers match fixture keywords; unsupported questions receive the supplied fallback.
+
+## Architecture
+
+I used a feature-based structure so each feature keeps its UI, hooks, helpers, styles, and tests together.
 
 ```text
-Canonical JSON → server page → typed dataset prop → dashboard selectors → charts/tables
-                                     ↑
-                          URL selection and filters
-                                     ↑
-                               citation links
-
-Server-only answer fixtures → POST /api/chat → typed SSE parser → local conversation state
-
-Alert form → Zod validation → optimistic local state → mock save → localStorage
-                                                         └ failure → rollback
+src/
+  app/                 Pages, API entry points, and feature composition
+    _components/       Workspace shell and MarketWorkspace
+    api/chat/route.ts  POST /api/chat entry point
+  features/
+    dashboard/         Selection, summaries, charts, and detail tables
+    assistant/         Conversation, SSE transport, and citation resolution
+      server/          Fixture loading and mock streaming handler
+    alerts/            Form validation, optimistic saving, and persistence
+  shared/
+    ui/                Reusable components
+    lib/               Market calculations, formatting, and URL serialization
+    types.ts           Shared data and event contracts
+    styles.css         Common styles and tokens
+  data/                Supplied JSON, map geometry, and dataset loader
 ```
 
-The static dataset is loaded by the server page and serialized once to the client. It is bundled source data, so there is no fetching/cache library or revalidation layer. Answer fixtures remain behind the route handler and are not passed to the browser.
+[MarketWorkspace](src/app/_components/MarketWorkspace.tsx) connects the dashboard, alerts, and assistant through props and callbacks. Features do not import another feature's implementation. Shared code does not depend on features or app composition. [ESLint rules](eslint.config.mjs) enforce these boundaries and restrict frontend imports of server modules and answer fixtures.
 
-URL state owns region, market, product, period, audience mode, map metric, comparisons, and source-status filtering. `useSearchParams` reads that state; native history updates avoid refetching the unchanged dataset. Unknown IDs and unsupported periods fall back to valid selections. A selected market determines its region.
+The server page loads the static dataset and passes it to the client workspace. Dashboard helpers calculate the selected view for charts and tables. Answer fixtures stay behind `/api/chat`.
 
-Conversation turns, composer input, table sort, heat-map keyboard focus, and unsaved form values are local React state. Alerts persist only in this browser. There is no shared persistence or notification delivery.
+State has three owners:
 
-Application code follows a feature-based structure:
+- **URL:** region, market, product, period, audience mode, map metric, comparisons, and source-status filter. Invalid values fall back to valid selections.
+- **Local React state:** conversation, composer input, sorting, keyboard focus, and unsaved form values.
+- **localStorage:** saved demo alert rules in the current browser.
 
-```text
-src/app/                    Routes, API entry points, and feature composition
-src/features/dashboard/     Dashboard UI, charts, URL parsing, and display models
-src/features/assistant/     Conversation UI, streaming, citations, and server handlers
-src/features/alerts/        Form, validation, and browser-local persistence
-src/shared/                 Reusable UI, market calculations, formatting, and contracts
-src/data/                   Canonical JSON and the dataset loader
-```
+## Key technical decisions
 
-`app/_components/MarketWorkspace` connects the features through shared contracts. Features do not import one another, and shared code does not import features or app composition. ESLint checks those boundaries and prevents frontend code from importing server modules or answer fixtures. Tests stay beside the code they verify.
+### Keep the existing stack
 
-Shared styles are in `src/shared/styles.css`, shell styles are beside `Workspace`, and feature styles are colocated in each feature's `styles.css`. Component classes remain in local `UI` objects. The structure adds no state manager, service container, or custom chart framework.
+I kept Next.js App Router, React, strict TypeScript, Tailwind, and the existing Button and Card components. Next.js handles both the page and the mock API, so I did not need a separate backend application. Native inputs and selects cover the form controls.
 
-## Data accuracy and trust
+### Use the URL for dashboard selection
 
-- The source covers June 2024–May 2026. The default is the dataset's latest period, not the current calendar month.
-- Revenue, forecast, prior-year revenue, and units are summed from facts before calculating percentages. Growth is `(actual / priorYear − 1) × 100`; attainment is `actual / forecast × 100`. Zero denominators produce unavailable percentages.
-- Source status and market share are latest-period attributes. Historical status and product/region market share are not invented. A status filter always means the latest source status, including on historical views.
-- Computed percentages can differ from the supplied rounded KPI values. The charts and detail table consistently calculate from the fact series; source status and share remain authoritative source attributes.
-- Market-level anomaly notes retain their period and are not presented as product-level explanations.
-- Every chart exposes exact values through a table. Radar axes normalize revenue contribution, growth, and attainment using disclosed scales; clipping affects only the drawing.
-- Amounts use `Intl.NumberFormat`, dates use UTC-safe `Intl.DateTimeFormat`, and USD is labeled explicitly. This dataset uses one reporting currency; no currency conversion is implied.
+The selected view should survive reloads and be shareable. [useDashboardView](src/features/dashboard/useDashboardView.ts) reads search parameters and updates browser history. Citation links use the same view contract to open the relevant market, product, and period. Temporary interactions stay in component state.
 
-AI interpretation has a separate visual surface from source data. Citations resolve real IDs and periods, and their links work as shareable URLs. Confidence arrives only with the final event and is labeled as fixture metadata, not a calibrated probability. Stopped/disconnected answers remain partial and receive no fabricated evidence. Abstentions and failures have explicit states.
+The dataset changes with the build. I did not add a query cache or global state library for unchanged local data.
 
-The assistant is intentionally **not aware of the dashboard selection**. Its answers retain the scope of their fixed citations. There are discrepancies in the supplied material: the risk fixture highlights three markets while source status flags six as at risk/off track; the forecast-miss fixture discusses weaker markets while the latest portfolio total is slightly ahead of plan. The source data is preserved, the UI labels the interpretation as a demo, and citations let readers inspect the actual values.
+### Keep calculations separate from rendering
 
-## Technical choices
+[Metric helpers](src/shared/lib/metrics.ts) sum actual, forecast, prior-year revenue, and units before calculating percentages. This avoids giving small and large markets equal weight by averaging their percentages.
 
-| Concern          | Choice and reason                                                                                                                                                             |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Framework        | Keep the starter's Next.js App Router, React, and strict TypeScript. Server-rendered data delivery and the mock stream need no separate service.                              |
-| Components/style | Existing Tremor Raw Button/Card plus CSS tokens for color, spacing, surfaces, and focus. Native controls avoid adding a second component system.                              |
-| Streaming        | POST streaming fetch with a buffered SSE decoder and AbortController. Native EventSource does not support this POST contract.                                                 |
-| Charts           | Recharts for time-series/radar; native SVG country paths and an HTML heat-map table for the other views. All chart animations are disabled.                                   |
-| Map              | Bundled Natural Earth country outlines. No map account, runtime network request, or map library.                                                                              |
-| State            | URL for shareable selection; local React state for transient interactions; localStorage for demo alerts. No Redux, Zustand, or query cache is needed for this static dataset. |
-| Validation       | Zod for dependent alert fields; explicit TypeScript contracts and runtime guards for streamed events. Ordinary form state is sufficient for this one form.                    |
+- Growth: `(actual / priorYear - 1) × 100`.
+- Forecast attainment: `(actual / forecast) × 100`.
+- Forecast variance: `actual - forecast`.
 
-## Accessibility
+A zero denominator produces an unavailable percentage. Charts and tables use these same calculations. Feature copy lives in `copy.ts` files, component classes in local `UI` constants, and chart preparation in focused helpers. Static labels and derived values do not need extra React state.
 
-The implementation includes semantic headings and table headers, labeled native controls, visible focus, a skip link, status text/icons beyond color, and reduced-motion support. Countries support Tab/Enter/Space; heat-map cells support arrow keys, Home/End, and Enter, with one cell in the Tab sequence. Revenue and comparison tables provide keyboard selection. Chart alternatives remain available if a Recharts render fails.
+### Simulate the backend through an API
 
-Streaming text is not announced token by token. A separate polite status reports generation progress; complete answers remain available to read. Validation messages identify affected fields, and save errors preserve form input.
+[POST /api/chat](src/features/assistant/server/chat-route.ts) validates a JSON question, selects a supplied fixture, and streams SSE token events followed by completion metadata. It also supports error fixtures and cancellation. No model or external service is called.
 
-Automated axe checks cover WCAG 2.1 A/AA rules on the analyst view. Mobile overflow is browser-tested. This is not a WCAG certification: a dedicated screen-reader audit, expanded browser/device coverage, and usability testing remain future work.
+I used streaming `fetch` because the request is a POST. The [client decoder](src/features/assistant/chat.ts) buffers incomplete frames, handles split UTF-8 characters, validates events, and reports an incomplete response if the stream ends early. `useChat` owns request lifetime and cancellation; components render the resulting turns.
 
-## Testing and engineering standards
+Citations are checked against real IDs and periods. Confidence comes from the fixture's final event. A stopped response keeps its partial text without adding confidence or evidence that never arrived.
 
-- **Vitest / Testing Library:** source references, aggregation and zero denominators, URL parsing, fragmented SSE including Unicode, malformed/premature responses, endpoint validation and cancellation, citations, keyboard map/heat-map selection, table drill paths, chart failure fallback, alert validation, and optimistic rollback/retry.
-- **Playwright:** the full dashboard → chat → citation → alert flow, URL history/reload, comparison persistence, uncertainty/abstention/error states, stopped generation, axe checks, and mobile layout.
-- **CI:** `.github/workflows/ci.yml` runs clean install, generated route types, typecheck, lint, unit/integration tests, production build, and Chromium E2E tests. Browser artifacts are retained for seven days.
+### Choose charts for the interaction
 
-The checks use behavioral assertions rather than snapshot collections or tests of chart-library internals. Strict typing, runtime event validation, safe plain-text rendering, shared metric calculations, feature boundaries, and focused branches are the main standards. Storybook, table virtualization, exhaustive browser matrices, and a real backend were deliberately deferred.
+Recharts renders the revenue trend and comparison radar. The country map uses bundled Natural Earth SVG geometry, and the forecast heat map uses an HTML table. This avoids a map account, runtime map requests, and another map library.
 
-The three branches have feature-specific changes: `feat/initial` is the shared foundation, `feat/dashboard` adds only dashboard features, and `feat/assistant` adds chat and its integration. Review dashboard against initial, and assistant against dashboard. Previous history is preserved in `dev`. Tests and documentation stay with the feature they cover.
+Every chart has a table with exact values. Radar scales are disclosed. Map growth and attainment bands use fixed thresholds; revenue uses five equal bands relative to the largest market in scope. These bands are display rules, separate from source status and alert thresholds.
 
-## Production path
+### Keep alert saving small and testable
 
-The production build prerenders `/`; `/api/chat` remains a dynamic streaming route. Standard `npm run build` / `npm run start` deployment is supported. Static-only hosting is insufficient because the POST stream requires a server.
+Zod validates the alert name, scope, enabled conditions, and threshold ranges. A mock asynchronous save writes to localStorage. A pending rule appears immediately; a failed save restores the previous rules and keeps the form input for retry.
 
-For Vercel, import the repository, select `dev`, retain the Next.js preset, use Node 24, and deploy with the standard commands. No application secrets are needed. Hosting is **not configured or deployed by this repository**. Verify incremental delivery with `curl -N` on the deployed `/api/chat`; a proxy must not buffer or transform SSE. The endpoint sends `Cache-Control: no-cache, no-transform`.
+The form layout, input validation, and save lifecycle have separate components or hooks. These rules demonstrate validation and optimistic rollback. They do not send notifications or change the source data.
 
-Already implemented: lazy chart chunks, no chart animations, isolated chat updates, route/chart error recovery, safe output rendering, input limits, cancellation, typed stream guards, and CI checks. Next.js handles fingerprinted static assets; the canonical dataset changes only with a new build.
+## Data and demo limits
 
-Before real users: measure production Core Web Vitals and JS transfer sizes, set budgets, add RUM/web-vitals and error tracking with privacy controls, apply request limits at the edge, and add durable alert storage. These are **not wired up** in this demo. Track LCP, INP, CLS, stream start/completion/cancellation/failure, and alert-save failures; avoid logging conversation contents by default. Establish preview/production deployment checks and rollback through the hosting provider. The configured GitHub workflow performs verification; it does not provision hosting or deploy.
+The supplied data covers **June 2024–May 2026**, so the dashboard defaults to May 2026 rather than the current month. Source status and market share are latest-period attributes; historical status and product/region share are unavailable. Amounts are labeled USD, with no currency conversion.
 
-## AI-assisted development and submission review
+The assistant is **not aware of the current dashboard selection**. Its answers and citations have fixed fixture scope. The risk fixture highlights three markets while source status flags six, and the forecast-miss fixture discusses weaker markets while the latest portfolio total is slightly ahead of forecast. I preserved the supplied material and kept interpretation separate from source values so readers can verify the claims.
 
-AI assistance was used to inspect the supplied contract, split the work, implement components and tests, and investigate verification failures. No sub-agents were used. The repeatable workflow was one task branch, implementation, relevant checks, diff review, and merge. Browser checks exposed contrast/label errors and a map-selection bug, which were fixed before delivery.
+Alerts are browser-local. Authentication, real model answers, durable storage, and notification delivery are outside this implementation.
 
-AI output is not treated as authoritative for business calculations, evidence, or test results. The canonical data and executed checks are the references. Do not add credentials, a real model, or unsupported market explanations to this exercise.
+## Verification and remaining work
 
-**Before submitting:** review the implementation and replace this factual development account with your own assessment of the choices, alternatives, engineering standards, and AI workflow. The assignment explicitly asks for your reasoning; this README should not be submitted as a substitute for that personal review.
+Vitest and Testing Library cover calculations, URL state, stream parsing, API validation and cancellation, citations, chart interactions, and alert rollback. Playwright covers complete user flows, history/reload, error states, keyboard navigation, the pinned menu, mobile overflow, and automated axe accessibility checks.
 
-With more time: a screen-reader usability pass, tighter production performance measurements, contextual fixture responses, and deployed observability would come first. Live mode, virtualization, command palette, and Storybook remain optional.
+[CI](.github/workflows/ci.yml) installs dependencies, generates route types, runs type checking, lint, unit/integration tests, a production build, and Chromium browser tests. It verifies the application; it does not deploy it.
+
+The UI includes labeled controls, visible focus, a skip link, keyboard chart selection, table alternatives, and chart error recovery. Stream progress uses a separate polite status instead of announcing every token. A manual screen-reader audit and broader browser/device testing remain to be done.
+
+Deployment needs a Next.js server because `/api/chat` streams POST responses. Hosting and observability are not configured. Before production use, I would verify streaming through the hosting proxy, measure Core Web Vitals and bundle sizes, and add error monitoring and request limits. Real alert persistence would need backend work.
+
+AI assistance was used for requirement analysis, implementation, refactoring, and tests. I checked the work against the supplied data, source code, and executed checks. No sub-agents were used.
 
 ## Attribution
 
-Map geometry is public-domain [Natural Earth](https://www.naturalearthdata.com/about/terms-of-use/) data, converted once to SVG paths by `scripts/build-map.py` using the upstream [110m country boundaries](https://github.com/nvkelso/natural-earth-vector/blob/master/geojson/ne_110m_admin_0_countries.geojson).
-
-## Refactoring boundaries
-
-`MarketWorkspace` composes the shell, dashboard, alerts, and assistant. It uses `useDashboardView` for URL selection and passes the selected view and callbacks to each feature. `MarketConsole` composes only dashboard headers, summaries, charts, and priorities. `Panel` and `DataTable` own shared presentation and accessibility markup. Market projections and comparison normalization are pure functions.
-
-`AlertForm` composes the form, `useAlertForm` owns input and validation, `useAlertRules` owns optimistic saving and rollback, and `SavedAlerts` owns rule display. For chat, `useChat` owns request lifetime and turn updates, `useChatScroll` owns scroll-follow behavior, and `ChatComposer` owns input. HTTP/SSE transport and citation resolution live in `src/features/assistant`; the mock handler and fixture loader live in its `server` folder. `app/api/chat/route.ts` remains the thin HTTP entry point. These are feature-specific components and hooks, with no additional state or service framework.
-
-UI copy is grouped in feature `copy.ts` constants, while component classes and chart styles stay in local `UI` objects. Map bands, heat-map rows, and sortable market rows are prepared by pure helpers colocated in `src/features/dashboard`. The map uses fixed percentage thresholds for growth and attainment; revenue uses five equal bands relative to the largest market in the selected scope. Derived chart values are calculated from the current selection rather than stored in extra React state.
-
-Presentation messages format complete labels and sentences. History counts, currency labels, comparison limits, and heat-map legend bounds use the dataset and shared configuration. Derived chart models are memoized for local interactions, and market summaries group facts in one pass. Chart failures offer a retry while retaining the data table. The stream decoder checks complete and partial event sizes, reports malformed JSON consistently, and releases the reader on failure. Citation links preserve normal browser modifier-click behavior.
+Map geometry is public-domain [Natural Earth](https://www.naturalearthdata.com/about/terms-of-use/) data. [scripts/build-map.py](scripts/build-map.py) converts the upstream [110m country boundaries](https://github.com/nvkelso/natural-earth-vector/blob/master/geojson/ne_110m_admin_0_countries.geojson) into the bundled SVG paths.
