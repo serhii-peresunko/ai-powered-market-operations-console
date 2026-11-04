@@ -4,6 +4,15 @@ import type { Market } from "@/data/types";
 import type { Metrics } from "@/lib/metrics";
 import { money, percent, periodLabel } from "@/lib/format";
 
+const UI = {
+  positive: "positive",
+  negative: "negative",
+  metricContext: "metric-context",
+  kpiGrid: "kpi-grid",
+  metricCard: "metric-card",
+  sourceDetail: "source-detail",
+} as const;
+
 export function DashboardSummary({
   metrics,
   currency,
@@ -23,30 +32,30 @@ export function DashboardSummary({
       value: money(metrics.actual, currency),
       tone:
         metrics.growth !== null && metrics.growth >= 0
-          ? "positive"
-          : "negative",
+          ? UI.positive
+          : UI.negative,
       detail: (
         <>
           {percent(metrics.growth, true)}{" "}
-          <span className="metric-context">vs prior year</span>
+          <span className={UI.metricContext}>vs prior year</span>
         </>
       ),
     },
     {
       label: "Forecast attainment",
       value: percent(metrics.attainment),
-      tone: metrics.gap >= 0 ? "positive" : "negative",
+      tone: metrics.gap >= 0 ? UI.positive : UI.negative,
       detail: (
         <>
           {money(metrics.gap, currency)}{" "}
-          <span className="metric-context">vs plan</span>
+          <span className={UI.metricContext}>vs plan</span>
         </>
       ),
     },
     {
       label: "Year-on-year growth",
       value: percent(metrics.growth, true),
-      tone: "metric-context",
+      tone: UI.metricContext,
       detail: "Same period, prior year",
     },
     {
@@ -57,12 +66,12 @@ export function DashboardSummary({
           <small> / {marketCount}</small>
         </>
       ),
-      tone: "metric-context",
+      tone: UI.metricContext,
       detail: `Latest source status · ${periodLabel(latestPeriod)}`,
     },
   ];
   return (
-    <section className="kpi-grid" aria-label="Selected scope health">
+    <section className={UI.kpiGrid} aria-label="Selected scope health">
       {cards.map((card) => (
         <HealthMetric key={card.label} {...card} />
       ))}
@@ -82,7 +91,7 @@ function HealthMetric({
   tone: string;
 }) {
   return (
-    <Card className="metric-card">
+    <Card className={UI.metricCard}>
       <p>{label}</p>
       <strong>{value}</strong>
       <span className={tone}>{detail}</span>
@@ -98,7 +107,7 @@ export function SourceNotes({
   latestPeriod: string;
 }) {
   return (
-    <div className="source-detail">
+    <div className={UI.sourceDetail}>
       <strong>Source notes · {market.name}</strong>
       <p>
         {market.kpis.anomalies

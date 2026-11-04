@@ -1,6 +1,10 @@
 "use client";
 import { Component, type ReactNode } from "react";
 
+const UI = {
+  notice: "notice",
+} as const;
+
 export class ChartBoundary extends Component<
   { children: ReactNode },
   { failed: boolean }
@@ -11,7 +15,7 @@ export class ChartBoundary extends Component<
   }
   render() {
     return this.state.failed ? (
-      <p className="notice" role="alert">
+      <p className={UI.notice} role="alert">
         The chart could not be displayed. Use the data table below to inspect
         the same values.
       </p>

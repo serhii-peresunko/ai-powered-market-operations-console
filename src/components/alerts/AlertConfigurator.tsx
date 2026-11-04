@@ -5,6 +5,13 @@ import { AlertForm } from "./AlertForm";
 import { SavedAlerts } from "./SavedAlerts";
 import { useAlertRules } from "./useAlertRules";
 
+const UI = {
+  fullWidth: "full-width",
+  countChip: "count-chip",
+  errorNotice: "notice error-text",
+  successNotice: "success-notice",
+} as const;
+
 export default function AlertConfigurator({
   data,
   period,
@@ -16,17 +23,17 @@ export default function AlertConfigurator({
   return (
     <Panel
       id="alerts"
-      className="full-width"
+      className={UI.fullWidth}
       eyebrow="DEFINE YOUR SIGNALS"
       title="Alert thresholds"
-      action={<span className="count-chip">Browser-local demo</span>}
+      action={<span className={UI.countChip}>Browser-local demo</span>}
       description="Configure rules for market totals across all products. Custom rules do not change source status or send notifications."
     >
       <AlertForm data={data} pending={pendingId !== null} onSave={save} />
       {feedback && (
         <p
           className={
-            feedback.kind === "error" ? "notice error-text" : "success-notice"
+            feedback.kind === "error" ? UI.errorNotice : UI.successNotice
           }
           role={feedback.kind === "error" ? "alert" : "status"}
         >

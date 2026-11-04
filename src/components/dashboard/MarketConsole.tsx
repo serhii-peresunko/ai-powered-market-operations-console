@@ -16,6 +16,12 @@ const AlertConfigurator = dynamic(
   { ssr: false },
 );
 
+const UI = {
+  dashboardMain: "dashboard-main",
+  dashboardGrid: "dashboard-grid",
+  dashboardFooter: "dashboard-footer",
+} as const;
+
 export function MarketConsole({
   data,
   renderAssistant,
@@ -46,7 +52,7 @@ export function MarketConsole({
   });
   return (
     <Workspace marketCount={data.markets.length} assistant={assistant}>
-      <main id="dashboard" tabIndex={-1} className="dashboard-main">
+      <main id="dashboard" tabIndex={-1} className={UI.dashboardMain}>
         <DashboardHeader data={data} view={view} update={update} />
         <DashboardSummary
           metrics={metrics}
@@ -61,7 +67,7 @@ export function MarketConsole({
             latestPeriod={data.meta.latestPeriod}
           />
         )}
-        <div className="dashboard-grid">
+        <div className={UI.dashboardGrid}>
           <DashboardCharts data={data} view={view} update={update} />
           <MarketPriorities
             data={data}
@@ -72,7 +78,7 @@ export function MarketConsole({
           />
         </div>
         <AlertConfigurator data={data} period={view.period} />
-        <footer className="dashboard-footer">
+        <footer className={UI.dashboardFooter}>
           Source of truth: canonical dataset{" "}
           <span>Generated {data.meta.generatedAt}</span>
         </footer>

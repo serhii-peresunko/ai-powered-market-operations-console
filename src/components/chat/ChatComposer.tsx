@@ -4,6 +4,12 @@ import { RiArrowUpLine, RiStopFill } from "@remixicon/react";
 import { Button } from "@/components/Button";
 import { MAX_QUESTION_LENGTH } from "@/lib/chat";
 
+const UI = {
+  composerForm: "composer-form",
+  srOnly: "sr-only",
+  composerActions: "composer-actions",
+} as const;
+
 export function ChatComposer({
   busy,
   onAsk,
@@ -26,13 +32,13 @@ export function ChatComposer({
   }
   return (
     <form
-      className="composer-form"
+      className={UI.composerForm}
       onSubmit={(event) => {
         event.preventDefault();
         send();
       }}
     >
-      <label htmlFor="chat-question" className="sr-only">
+      <label htmlFor="chat-question" className={UI.srOnly}>
         Ask about your markets
       </label>
       <textarea
@@ -54,7 +60,7 @@ export function ChatComposer({
         }}
         aria-describedby="chat-help"
       />
-      <div className="composer-actions">
+      <div className={UI.composerActions}>
         <span>
           {busy
             ? "Working with source data…"

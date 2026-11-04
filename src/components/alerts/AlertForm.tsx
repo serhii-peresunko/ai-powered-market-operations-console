@@ -5,6 +5,18 @@ import { Button } from "@/components/Button";
 import { alertSchema, initialAlert, type AlertInput } from "@/lib/alerts";
 import { AlertThreshold } from "./AlertThreshold";
 
+const UI = {
+  fieldError: "field-error",
+  alertDetails: "alert-details",
+  srOnly: "sr-only",
+  alertFields: "alert-fields",
+  formField: "form-field",
+  conditionFields: "condition-fields",
+  matchField: "form-field match-field",
+  alertActions: "alert-actions",
+  demoFailure: "demo-failure",
+} as const;
+
 export function AlertForm({
   data,
   pending,
@@ -21,7 +33,7 @@ export function AlertForm({
     setValues((previous) => ({ ...previous, ...patch }));
   const error = (field: string) =>
     errors[field] ? (
-      <p id={`alert-${field}-error`} className="field-error">
+      <p id={`alert-${field}-error`} className={UI.fieldError}>
         {errors[field]}
       </p>
     ) : null;
@@ -49,13 +61,13 @@ export function AlertForm({
     void onSave(parsed.data, simulateFailure);
   }
   return (
-    <details className="alert-details">
+    <details className={UI.alertDetails}>
       <summary>Configure an alert</summary>
       <form onSubmit={submit} noValidate>
         <fieldset disabled={pending}>
-          <legend className="sr-only">Alert configuration</legend>
-          <div className="alert-fields">
-            <label className="form-field">
+          <legend className={UI.srOnly}>Alert configuration</legend>
+          <div className={UI.alertFields}>
+            <label className={UI.formField}>
               Alert name
               <input
                 id="alert-name"
@@ -68,7 +80,7 @@ export function AlertForm({
               />
               {error("name")}
             </label>
-            <label className="form-field">
+            <label className={UI.formField}>
               Apply to
               <select
                 value={values.scope}
@@ -88,7 +100,7 @@ export function AlertForm({
               </select>
             </label>
             {values.scope !== "portfolio" && (
-              <label className="form-field">
+              <label className={UI.formField}>
                 {values.scope === "region" ? "Region" : "Market"}
                 <select
                   id="alert-targetId"
@@ -115,7 +127,7 @@ export function AlertForm({
           </div>
           <fieldset
             id="alert-conditions"
-            className="condition-fields"
+            className={UI.conditionFields}
             tabIndex={-1}
             aria-describedby={
               errors.conditions ? "alert-conditions-error" : undefined
@@ -141,7 +153,7 @@ export function AlertForm({
               onChange={(attainment) => change({ attainment })}
             />
             {error("conditions")}
-            <label className="form-field match-field">
+            <label className={UI.matchField}>
               Combine conditions
               <select
                 value={values.match}
@@ -155,8 +167,8 @@ export function AlertForm({
               </select>
             </label>
           </fieldset>
-          <div className="alert-actions">
-            <label className="demo-failure">
+          <div className={UI.alertActions}>
+            <label className={UI.demoFailure}>
               <input
                 type="checkbox"
                 checked={simulateFailure}
