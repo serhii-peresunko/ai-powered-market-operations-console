@@ -3,9 +3,14 @@ import type { DashboardProps } from "./types";
 import { isStatus } from "@/data/types";
 import { periodLabel } from "@/lib/format";
 
+const UI = {
+  viewControls: "view-controls",
+  textButton: "text-button",
+} as const;
+
 export function ViewControls({ data, view, update }: DashboardProps) {
   return (
-    <div className="view-controls">
+    <div className={UI.viewControls}>
       <label>
         Region
         <select
@@ -92,7 +97,7 @@ export function ViewControls({ data, view, update }: DashboardProps) {
       )}
       <button
         type="button"
-        className="text-button"
+        className={UI.textButton}
         onClick={() =>
           update({
             region: undefined,

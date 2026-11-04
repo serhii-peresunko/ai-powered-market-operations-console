@@ -14,7 +14,27 @@ import { ChartBoundary } from "./ChartBoundary";
 import { comparisonMetrics } from "@/lib/comparisons";
 import { money, percent, periodLabel } from "@/lib/format";
 
-const colors = ["#087f71", "#5268a4", "#a56b27", "#a74e77"];
+const UI = {
+  colors: ["#087f71", "#5268a4", "#a56b27", "#a74e77"],
+  grid: { stroke: "#dce5e1" },
+  axisTick: { fill: "#61737a", fontSize: 9 },
+  swatch: (background: string) => ({ background }),
+  series: (color: string, index: number) => ({
+    stroke: color,
+    fill: color,
+    fillOpacity: 0.08,
+    strokeWidth: 2,
+    strokeDasharray: index === 0 ? undefined : `${index * 3} 3`,
+  }),
+  countChip: "count-chip",
+  comparisonPicker: "comparison-picker",
+  srOnly: "sr-only",
+  comparisonChips: "comparison-chips",
+  radarChart: "radar-chart",
+  emptyPanel: "empty-panel",
+  scaleExplanation: "scale-explanation",
+  tableLink: "table-link",
+} as const;
 
 export default function ComparisonRadar({
   data,
@@ -30,7 +50,7 @@ export default function ComparisonRadar({
       eyebrow="SIDE BY SIDE"
       action={
         <>
-          <span className="count-chip">{periodLabel(view.period)}</span>
+          <span className={UI.countChip}>{periodLabel(view.period)}</span>
         </>
       }
       description={
@@ -40,8 +60,8 @@ export default function ComparisonRadar({
         </>
       }
     >
-      <label className="comparison-picker">
-        <span className="sr-only">Add comparison</span>
+      <label className={UI.comparisonPicker}>
+        <span className={UI.srOnly}>Add comparison</span>
         <select
           value=""
           disabled={selected.length >= 4}
@@ -64,7 +84,7 @@ export default function ComparisonRadar({
             ))}
         </select>
       </label>
-      <div className="comparison-chips">
+      <div className={UI.comparisonChips}>
         {selected.map((item, index) => (
           <button
             key={item.id}
@@ -73,7 +93,7 @@ export default function ComparisonRadar({
             }
             aria-label={`Remove ${item.name} from comparison`}
           >
-            <i style={{ background: colors[index] }} />
+            <i style={UI.swatch(UI.colors[index])} />
             {item.name}
             <span aria-hidden="true">×</span>
           </button>
@@ -82,17 +102,14 @@ export default function ComparisonRadar({
       {selected.length > 0 ? (
         <ChartBoundary>
           <div
-            className="radar-chart"
+            className={UI.radarChart}
             role="img"
             aria-label={`Normalized revenue weight, growth, and attainment for ${selected.map((item) => item.name).join(", ")}. Exact values in the table below.`}
           >
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={points} outerRadius="67%">
-                <PolarGrid stroke="#dce5e1" />
-                <PolarAngleAxis
-                  dataKey="axis"
-                  tick={{ fill: "#61737a", fontSize: 9 }}
-                />
+                <PolarGrid {...UI.grid} />
+                <PolarAngleAxis dataKey="axis" tick={UI.axisTick} />
                 <PolarRadiusAxis
                   domain={[0, 100]}
                   tick={false}
@@ -103,11 +120,7 @@ export default function ComparisonRadar({
                     key={item.id}
                     name={item.name}
                     dataKey={item.id}
-                    stroke={colors[index]}
-                    fill={colors[index]}
-                    fillOpacity={0.08}
-                    strokeWidth={2}
-                    strokeDasharray={index === 0 ? undefined : `${index * 3} 3`}
+                    {...UI.series(UI.colors[index], index)}
                     isAnimationActive={false}
                   />
                 ))}
@@ -116,11 +129,11 @@ export default function ComparisonRadar({
           </div>
         </ChartBoundary>
       ) : (
-        <p className="empty-panel">
+        <p className={UI.emptyPanel}>
           Add a market or region to begin comparing.
         </p>
       )}
-      <details className="scale-explanation">
+      <details className={UI.scaleExplanation}>
         <summary>How to read the scales</summary>
         <p>
           All axes run from 0 to 100. Revenue weight is the entity’s share of
@@ -154,7 +167,7 @@ export default function ComparisonRadar({
             <tr key={item.id}>
               <th scope="row">
                 <button
-                  className="table-link"
+                  className={UI.tableLink}
                   onClick={() => update(item.scope)}
                 >
                   {item.name}

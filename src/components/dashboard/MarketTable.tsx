@@ -8,6 +8,16 @@ import { money, percent, periodLabel } from "@/lib/format";
 import { StatusBadge } from "./StatusBadge";
 
 type SortKey = "actual" | "growth" | "attainment" | "gap";
+const UI = {
+  sortButton: "sort-button",
+  fullWidth: "full-width",
+  countChip: "count-chip",
+  tableLink: "table-link",
+  positive: "positive",
+  negative: "negative",
+  emptyPanel: "empty-panel",
+} as const;
+
 export function MarketTable({ data, view, update }: DashboardProps) {
   const [sort, setSort] = useState<{ key: SortKey; ascending: boolean }>({
     key: "actual",
@@ -59,7 +69,7 @@ export function MarketTable({ data, view, update }: DashboardProps) {
         }
       >
         <button
-          className="sort-button"
+          className={UI.sortButton}
           onClick={() =>
             setSort({
               key,
@@ -87,10 +97,10 @@ export function MarketTable({ data, view, update }: DashboardProps) {
       }
       eyebrow="THE NUMBERS BEHIND THE SIGNAL"
       titleId="table-title"
-      className="full-width"
+      className={UI.fullWidth}
       action={
         <>
-          <span className="count-chip">
+          <span className={UI.countChip}>
             {rows.length} {selectedMarket ? "products" : "markets"}
           </span>
         </>
@@ -136,7 +146,7 @@ export function MarketTable({ data, view, update }: DashboardProps) {
             >
               <th scope="row">
                 <button
-                  className="table-link"
+                  className={UI.tableLink}
                   onClick={() =>
                     update(
                       selectedMarket
@@ -158,7 +168,7 @@ export function MarketTable({ data, view, update }: DashboardProps) {
               {!selectedMarket && (
                 <td>
                   <button
-                    className="table-link"
+                    className={UI.tableLink}
                     onClick={() =>
                       update({
                         region: row.market.regionId,
@@ -177,7 +187,7 @@ export function MarketTable({ data, view, update }: DashboardProps) {
               )}
               <td>{money(row.actual, data.meta.currency, false)}</td>
               <td>{money(row.forecast, data.meta.currency, false)}</td>
-              <td className={row.gap >= 0 ? "positive" : "negative"}>
+              <td className={row.gap >= 0 ? UI.positive : UI.negative}>
                 {row.gap > 0 ? "+" : ""}
                 {money(row.gap, data.meta.currency, false)}
               </td>
@@ -201,7 +211,7 @@ export function MarketTable({ data, view, update }: DashboardProps) {
         </tbody>
       </DataTable>
       {rows.length === 0 && (
-        <p className="empty-panel">
+        <p className={UI.emptyPanel}>
           No markets match this selection. Change the scope or status filter.
         </p>
       )}

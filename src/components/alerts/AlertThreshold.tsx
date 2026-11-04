@@ -1,5 +1,12 @@
 import { alertThresholds } from "@/lib/alerts";
 
+const UI = {
+  conditionRow: "condition-row",
+  thresholdInput: "threshold-input",
+  srOnly: "sr-only",
+  fieldError: "field-error",
+} as const;
+
 export function AlertThreshold({
   field,
   label,
@@ -21,7 +28,7 @@ export function AlertThreshold({
   const errorId = `alert-${field}-error`;
   return (
     <>
-      <div className="condition-row">
+      <div className={UI.conditionRow}>
         <label>
           <input
             type="checkbox"
@@ -30,8 +37,8 @@ export function AlertThreshold({
           />
           {label}
         </label>
-        <label className="threshold-input">
-          <span className="sr-only">
+        <label className={UI.thresholdInput}>
+          <span className={UI.srOnly}>
             {field === "growth" ? "Growth" : "Attainment"} threshold
           </span>
           <input
@@ -49,7 +56,7 @@ export function AlertThreshold({
         </label>
       </div>
       {error && (
-        <p id={errorId} className="field-error">
+        <p id={errorId} className={UI.fieldError}>
           {error}
         </p>
       )}

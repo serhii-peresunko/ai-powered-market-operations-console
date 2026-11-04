@@ -7,6 +7,20 @@ import type { DashboardProps } from "./types";
 import type { marketMetricsFor } from "@/lib/metrics";
 import { money, percent } from "@/lib/format";
 
+const UI = {
+  countChip: "count-chip",
+  riskList: "risk-list",
+  emptyPanel: "empty-panel",
+  riskRow: "risk-row",
+  countryCode: "country-code",
+  riskName: "risk-name",
+  moversList: "movers-list",
+  moverRow: "mover-row",
+  marketLink: "market-link",
+  positive: "positive",
+  negative: "negative",
+} as const;
+
 export function MarketPriorities({
   data,
   rows,
@@ -31,22 +45,22 @@ export function MarketPriorities({
         eyebrow="PRIORITIZE"
         action={
           <>
-            <span className="count-chip">{risks.length} markets</span>
+            <span className={UI.countChip}>{risks.length} markets</span>
           </>
         }
         description={<>Latest source flags, including off-track markets.</>}
       >
-        <div className="risk-list">
+        <div className={UI.riskList}>
           {risks.length === 0 && (
-            <p className="empty-panel">
+            <p className={UI.emptyPanel}>
               No source-flagged markets in this scope.
             </p>
           )}
           {risks.map((market) => (
-            <div key={market.id} className="risk-row">
-              <span className="country-code">{market.iso2}</span>
+            <div key={market.id} className={UI.riskRow}>
+              <span className={UI.countryCode}>{market.iso2}</span>
               <button
-                className="risk-name"
+                className={UI.riskName}
                 onClick={() =>
                   update({
                     region: market.regionId,
@@ -75,11 +89,11 @@ export function MarketPriorities({
         eyebrow="WHAT MOVED THE NEEDLE"
         description={<>Ranked by absolute revenue variance from plan.</>}
       >
-        <div className="movers-list">
+        <div className={UI.moversList}>
           {movers.map(({ market, gap, attainment }) => (
-            <div key={market.id} className="mover-row">
+            <div key={market.id} className={UI.moverRow}>
               <button
-                className="market-link"
+                className={UI.marketLink}
                 onClick={() =>
                   update({
                     region: market.regionId,
@@ -91,7 +105,7 @@ export function MarketPriorities({
                 <strong>{market.name}</strong>
                 <span>{percent(attainment)} of forecast</span>
               </button>
-              <strong className={gap >= 0 ? "positive" : "negative"}>
+              <strong className={gap >= 0 ? UI.positive : UI.negative}>
                 {gap > 0 ? "+" : ""}
                 {money(gap, data.meta.currency)}
               </strong>

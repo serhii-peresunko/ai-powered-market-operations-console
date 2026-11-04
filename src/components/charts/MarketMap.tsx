@@ -7,12 +7,28 @@ import world from "@/data/world-map.json";
 import { marketMetricsFor } from "@/lib/metrics";
 import { money, percent, periodLabel } from "@/lib/format";
 
-const colors = ["#b55a60", "#d8ac64", "#c8dbba", "#6fa88f", "#247963"];
 const metricLabels = {
   attainment: "Forecast attainment",
   growth: "Year-on-year growth",
   revenue: "Revenue",
 };
+
+const UI = {
+  colors: ["#b55a60", "#d8ac64", "#c8dbba", "#6fa88f", "#247963"],
+  missingFill: "#e3e9e5",
+  background: { fill: "#f6f9f7", rx: 8 },
+  grid: { stroke: "#e9efeb", strokeWidth: 0.5 },
+  country: { stroke: "#fff", strokeWidth: 0.65 },
+  selectedCountry: { stroke: "#142f32", strokeWidth: 2 },
+  swatch: (background: string) => ({ background }),
+  compactLabel: "compact-label",
+  worldMap: "world-map",
+  mapCountry: "map-country",
+  mapReadout: "map-readout",
+  mapLegend: "map-legend",
+  tableLink: "table-link",
+  chartCredit: "chart-credit",
+} as const;
 
 export default function MarketMap({ data, view, update }: DashboardProps) {
   const [hovered, setHovered] = useState<string | null>(null);
@@ -38,8 +54,8 @@ export default function MarketMap({ data, view, update }: DashboardProps) {
         : [maximum * 0.2, maximum * 0.4, maximum * 0.6, maximum * 0.8];
   const color = (value: number | null) =>
     value === null
-      ? "#e3e9e5"
-      : colors[thresholds.filter((threshold) => value >= threshold).length];
+      ? UI.missingFill
+      : UI.colors[thresholds.filter((threshold) => value >= threshold).length];
   const format = (value: number | null) =>
     value === null
       ? "Unavailable"
@@ -59,7 +75,7 @@ export default function MarketMap({ data, view, update }: DashboardProps) {
       eyebrow="A GLOBAL PERSPECTIVE"
       action={
         <>
-          <label className="compact-label">
+          <label className={UI.compactLabel}>
             Color by
             <select
               value={view.mapKpi}
@@ -89,21 +105,15 @@ export default function MarketMap({ data, view, update }: DashboardProps) {
         </>
       }
     >
-      <div className="world-map">
+      <div className={UI.worldMap}>
         <svg
           viewBox="0 0 720 300"
           role="group"
           aria-label={`${metricLabels[view.mapKpi]} by country. Tab to tracked countries and press Enter to select.`}
         >
-          <rect width="720" height="300" fill="#f6f9f7" rx="8" />
+          <rect width="720" height="300" {...UI.background} />
           {[60, 120, 180, 240].map((y) => (
-            <path
-              key={y}
-              d={`M0 ${y}H720`}
-              stroke="#e9efeb"
-              strokeWidth=".5"
-              aria-hidden="true"
-            />
+            <path key={y} d={`M0 ${y}H720`} {...UI.grid} aria-hidden="true" />
           ))}
           {world.map((country) => {
             const item = values.find(
@@ -116,11 +126,10 @@ export default function MarketMap({ data, view, update }: DashboardProps) {
               <path
                 key={country.id}
                 d={country.path}
-                fill={item ? color(item.value) : "#e3e9e5"}
-                stroke={
-                  item && item.market.id === view.market ? "#142f32" : "#fff"
-                }
-                strokeWidth={item && item.market.id === view.market ? 2 : 0.65}
+                fill={item ? color(item.value) : UI.missingFill}
+                {...(item && item.market.id === view.market
+                  ? UI.selectedCountry
+                  : UI.country)}
                 fillRule="evenodd"
                 vectorEffect="non-scaling-stroke"
                 role={item ? "button" : undefined}
@@ -128,7 +137,7 @@ export default function MarketMap({ data, view, update }: DashboardProps) {
                 aria-hidden={item ? undefined : true}
                 aria-pressed={item ? item.market.id === view.market : undefined}
                 tabIndex={item ? 0 : undefined}
-                className={item ? "map-country" : undefined}
+                className={item ? UI.mapCountry : undefined}
                 onClick={item ? () => choose(item.market) : undefined}
                 onKeyDown={
                   item
@@ -152,15 +161,15 @@ export default function MarketMap({ data, view, update }: DashboardProps) {
           })}
         </svg>
       </div>
-      <p className="map-readout" aria-live="polite">
+      <p className={UI.mapReadout} aria-live="polite">
         {active
           ? `${active.market.name} · ${format(active.value)} ${metricLabels[view.mapKpi]}`
           : `${values.length} tracked markets in scope · Hover or focus a country to inspect`}
       </p>
-      <div className="map-legend" aria-label="Map color scale">
-        {colors.map((fill, index) => (
+      <div className={UI.mapLegend} aria-label="Map color scale">
+        {UI.colors.map((fill, index) => (
           <span key={fill}>
-            <i style={{ background: fill }} />
+            <i style={UI.swatch(fill)} />
             {index === 0
               ? `< ${format(thresholds[0])}`
               : index === 4
@@ -169,7 +178,7 @@ export default function MarketMap({ data, view, update }: DashboardProps) {
           </span>
         ))}
         <span>
-          <i style={{ background: "#e3e9e5" }} />
+          <i style={UI.swatch(UI.missingFill)} />
           No data
         </span>
       </div>
@@ -194,7 +203,7 @@ export default function MarketMap({ data, view, update }: DashboardProps) {
           {values.map(({ market, value }) => (
             <tr key={market.id} aria-selected={view.market === market.id}>
               <th scope="row">
-                <button className="table-link" onClick={() => choose(market)}>
+                <button className={UI.tableLink} onClick={() => choose(market)}>
                   {market.name}
                   {view.market === market.id ? " · Selected" : ""}
                 </button>
@@ -210,7 +219,7 @@ export default function MarketMap({ data, view, update }: DashboardProps) {
           ))}
         </tbody>
       </DataTable>
-      <p className="chart-credit">
+      <p className={UI.chartCredit}>
         Made with Natural Earth · Public-domain country boundaries
       </p>
     </Panel>
