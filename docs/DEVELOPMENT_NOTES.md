@@ -101,7 +101,7 @@ These are browser-local rules for market totals across all products. They show m
 
 Added an asynchronous mock save backed by localStorage. A pending rule appears immediately. Success confirms it; failure restores the previous rules and preserves input for retry. A failure toggle makes that path reproducible. Concurrent saves are blocked while one is pending.
 
-This demonstrates the requested interaction without introducing a persistence service. During refactoring, `AlertForm` kept input and validation, `useAlertRules` took ownership of persistence and rollback, and `SavedAlerts` became responsible for display.
+This demonstrates the requested interaction without introducing a persistence service. During refactoring, `AlertForm` became the form layout, `useAlertForm` took ownership of input and validation, `useAlertRules` kept persistence and rollback, and `SavedAlerts` remained responsible for display.
 
 Implementation: [alert rules and validation](../src/lib/alerts.ts) and [save lifecycle](../src/components/alerts/useAlertRules.ts).
 
@@ -118,6 +118,14 @@ Browser checks found contrast and accessible-name issues, which were corrected. 
 Split `MarketConsole` into workspace layout, header, summary, charts, and priorities. It now coordinates selection and composition. `Panel` owns the repeated heading/description structure; `DataTable` owns the scrollable, labeled table and optional disclosure.
 
 Centralized market filtering and metric projections, comparison entity resolution, and radar normalization. This gives charts and tables the same rules and keeps calculation code separately testable. Stateful alert saving was extracted from the form component.
+
+Moved interface text into feature `copy.ts` constants and kept component styles in local `UI` objects. Repeated domain values use typed constants. Static text and values derived from the current filters do not need React state.
+
+Reduced `MarketMap` to a 121-line panel by moving SVG country rendering into `MarketMapCanvas` and data preparation into [the map helper](../src/lib/market-map.ts). Growth and attainment keep their existing fixed percentage thresholds. Revenue bands use 20%, 40%, 60%, and 80% of the largest value in scope, producing five equal ranges. These are display bands, not alert rules or source statuses. Tests cover their boundaries, missing values, and an empty scope.
+
+Heat-map rows, variance classification, keyboard navigation, sortable table data, and alert form validation now have focused helpers or hooks. The welcome screen and citation list have their own components. An unused stylesheet for an older console layout was removed.
+
+The final browser review exposed a race between consecutive filter updates. The URL update hook now reads the current browser URL before applying each patch, so a period change cannot erase a market selection that React has not rendered yet. A regression test applies market, period, and product updates in the same render cycle.
 
 The abstractions correspond to repeated UI or existing responsibilities. The refactor added no runtime libraries, service layer, or state framework.
 
@@ -177,7 +185,7 @@ Those differences are documented so canned interpretation is not mistaken for a 
 
 ### 7. Verify the complete workflows
 
-The last full implementation verification passed 30 unit/integration tests, nine browser tests, lint, type checking, and the production build. Coverage includes calculations, source references, URL state, SSE parsing, request cancellation, citation navigation, optimistic rollback, keyboard interactions, and error recovery.
+The last full implementation verification passed 37 unit/integration tests, nine browser tests, lint, type checking, and the production build. Coverage includes calculations, source references, URL state, SSE parsing, request cancellation, citation navigation, optimistic rollback, keyboard interactions, and error recovery.
 
 Browser flows cover dashboard selection → streamed answer → source citation → alert saving, along with history/reload, comparisons, uncertainty, abstention, errors, accessibility, and mobile overflow. The dashboard-only branch was separately checked for the absence of chat UI and an active chat endpoint.
 
