@@ -3,6 +3,7 @@ import { Card } from "@/components/Card";
 import type { Market } from "@/data/types";
 import type { Metrics } from "@/lib/metrics";
 import { money, percent, periodLabel } from "@/lib/format";
+import { DASHBOARD_SUMMARY_TEXT as TEXT } from "./copy";
 
 const UI = {
   positive: "positive",
@@ -28,7 +29,7 @@ export function DashboardSummary({
 }) {
   const cards = [
     {
-      label: "Total revenue",
+      label: TEXT.totalRevenue,
       value: money(metrics.actual, currency),
       tone:
         metrics.growth !== null && metrics.growth >= 0
@@ -37,41 +38,44 @@ export function DashboardSummary({
       detail: (
         <>
           {percent(metrics.growth, true)}{" "}
-          <span className={UI.metricContext}>vs prior year</span>
+          <span className={UI.metricContext}>{TEXT.vsPriorYear}</span>
         </>
       ),
     },
     {
-      label: "Forecast attainment",
+      label: TEXT.forecastAttainment,
       value: percent(metrics.attainment),
       tone: metrics.gap >= 0 ? UI.positive : UI.negative,
       detail: (
         <>
           {money(metrics.gap, currency)}{" "}
-          <span className={UI.metricContext}>vs plan</span>
+          <span className={UI.metricContext}>{TEXT.vsPlan}</span>
         </>
       ),
     },
     {
-      label: "Year-on-year growth",
+      label: TEXT.yearOnYearGrowth,
       value: percent(metrics.growth, true),
       tone: UI.metricContext,
-      detail: "Same period, prior year",
+      detail: TEXT.samePeriodPriorYear,
     },
     {
-      label: "Markets to watch",
+      label: TEXT.marketsToWatch,
       value: (
         <>
           {riskCount}
-          <small> / {marketCount}</small>
+          <small>
+            {TEXT.countSeparator}
+            {marketCount}
+          </small>
         </>
       ),
       tone: UI.metricContext,
-      detail: `Latest source status · ${periodLabel(latestPeriod)}`,
+      detail: TEXT.latestStatus(periodLabel(latestPeriod)),
     },
   ];
   return (
-    <section className={UI.kpiGrid} aria-label="Selected scope health">
+    <section className={UI.kpiGrid} aria-label={TEXT.selectedScopeHealth}>
       {cards.map((card) => (
         <HealthMetric key={card.label} {...card} />
       ))}
@@ -108,13 +112,16 @@ export function SourceNotes({
 }) {
   return (
     <div className={UI.sourceDetail}>
-      <strong>Source notes · {market.name}</strong>
+      <strong>
+        {TEXT.sourceNotes}
+        {market.name}
+      </strong>
       <p>
         {market.kpis.anomalies
-          .map((a) => `${periodLabel(a.period)}: ${a.note}`)
-          .join(" ") || "No anomalies marked in the supplied data."}{" "}
-        These are market-level notes; latest status is dated{" "}
-        {periodLabel(latestPeriod)}.
+          .map((a) => TEXT.anomaly(periodLabel(a.period), a.note))
+          .join(" ") || TEXT.noAnomalies}{" "}
+        {TEXT.sourceDateNote} {periodLabel(latestPeriod)}
+        {TEXT.fullStop}
       </p>
     </div>
   );

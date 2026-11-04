@@ -2,6 +2,21 @@ import { z } from "zod";
 import type { Dataset } from "@/data/types";
 import { marketMetricsFor } from "./metrics";
 
+export const ALERT_LIMITS = {
+  name: { min: 3, max: 60 },
+  saveDelayMs: 650,
+} as const;
+const TEXT = {
+  nameTooShort: `Use at least ${ALERT_LIMITS.name.min} characters.`,
+  nameTooLong: `Use at most ${ALERT_LIMITS.name.max} characters.`,
+  noCondition: "Enable at least one condition.",
+  invalidTarget: (scope: string) => `Select a valid ${scope}.`,
+  invalidPercentage: (min: number, max: number) =>
+    `Enter a percentage from ${min} to ${max}.`,
+  saveFailed:
+    "Demo save failed. Your previous rules were restored. Retry when ready.",
+} as const;
+
 export const ALERT_SCOPE = {
   PORTFOLIO: "portfolio",
   REGION: "region",
@@ -29,8 +44,8 @@ export function alertSchema(data: Dataset) {
       name: z
         .string()
         .trim()
-        .min(3, "Use at least 3 characters.")
-        .max(60, "Use at most 60 characters."),
+        .min(ALERT_LIMITS.name.min, TEXT.nameTooShort)
+        .max(ALERT_LIMITS.name.max, TEXT.nameTooLong),
       scope: z.enum([
         ALERT_SCOPE.PORTFOLIO,
         ALERT_SCOPE.REGION,
@@ -48,7 +63,7 @@ export function alertSchema(data: Dataset) {
         context.addIssue({
           code: "custom",
           path: ["conditions"],
-          message: "Enable at least one condition.",
+          message: TEXT.noCondition,
         });
       if (
         value.scope !== ALERT_SCOPE.PORTFOLIO &&
@@ -59,7 +74,7 @@ export function alertSchema(data: Dataset) {
         context.addIssue({
           code: "custom",
           path: ["targetId"],
-          message: `Select a valid ${value.scope}.`,
+          message: TEXT.invalidTarget(value.scope),
         });
       for (const [field, enabled] of [
         [ALERT_METRIC.GROWTH, value.growthEnabled],
@@ -77,7 +92,7 @@ export function alertSchema(data: Dataset) {
           context.addIssue({
             code: "custom",
             path: [field],
-            message: `Enter a percentage from ${min} to ${max}.`,
+            message: TEXT.invalidPercentage(min, max),
           });
       }
     });
@@ -156,10 +171,7 @@ export async function saveAlert(
   existing: AlertRule[],
   fail: boolean,
 ) {
-  await new Promise((resolve) => setTimeout(resolve, 650));
-  if (fail)
-    throw new Error(
-      "Demo save failed. Your previous rules were restored. Retry when ready.",
-    );
+  await new Promise((resolve) => setTimeout(resolve, ALERT_LIMITS.saveDelayMs));
+  if (fail) throw new Error(TEXT.saveFailed);
   localStorage.setItem(alertStorageKey, JSON.stringify([...existing, rule]));
 }

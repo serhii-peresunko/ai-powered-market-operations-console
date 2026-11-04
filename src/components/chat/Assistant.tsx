@@ -5,6 +5,8 @@ import { useChat } from "./useChat";
 import { useChatScroll } from "./useChatScroll";
 import { ChatComposer } from "./ChatComposer";
 import { Conversation } from "./Conversation";
+import { AssistantWelcome } from "./AssistantWelcome";
+import { ASSISTANT_TEXT as TEXT } from "./copy";
 
 const UI = {
   assistantPanel: "assistant-panel",
@@ -14,9 +16,6 @@ const UI = {
   conversationScroll: "conversation-scroll",
   srOnly: "sr-only",
   assistantFootnote: "assistant-footnote",
-  assistantEmpty: "assistant-empty",
-  welcomeSymbol: "welcome-symbol",
-  suggestedQuestions: "suggested-questions",
 } as const;
 
 export function Assistant(context: AssistantContext) {
@@ -37,10 +36,10 @@ export function Assistant(context: AssistantContext) {
           <RiSparklingLine size={21} aria-hidden="true" />
         </span>
         <div>
-          <h2 id="assistant-title">Market assistant</h2>
-          <p>AI-generated interpretation</p>
+          <h2 id="assistant-title">{TEXT.title}</h2>
+          <p>{TEXT.subtitle}</p>
         </div>
-        <span className={UI.demoBadge}>DEMO</span>
+        <span className={UI.demoBadge}>{TEXT.demo}</span>
       </header>
       <div
         ref={scrollRef}
@@ -60,47 +59,15 @@ export function Assistant(context: AssistantContext) {
       </div>
       <div className={UI.srOnly} role="status">
         {chat.busy
-          ? "Assistant is generating a response."
+          ? TEXT.generating
           : chat.turns.length
-            ? "Generation finished. Review the latest answer."
-            : "Assistant ready."}
+            ? TEXT.finished
+            : TEXT.ready}
       </div>
       <ChatComposer busy={chat.busy} onAsk={ask} onStop={chat.stop} />
       <p id="chat-help" className={UI.assistantFootnote}>
-        Fixture-based demo · Verify AI claims against source data.
+        {TEXT.footnote}
       </p>
     </aside>
-  );
-}
-
-function AssistantWelcome({ onAsk }: { onAsk: (question: string) => void }) {
-  return (
-    <div className={UI.assistantEmpty}>
-      <span className={UI.welcomeSymbol}>
-        <RiSparklingLine size={30} aria-hidden="true" />
-      </span>
-      <h3>
-        From numbers
-        <br />
-        to understanding.
-      </h3>
-      <p>
-        Ask a question about your portfolio.
-        <br />
-        Follow the evidence behind every answer.
-      </p>
-      <div className={UI.suggestedQuestions}>
-        {[
-          "Which markets are at risk?",
-          "Why did Germany's revenue dip?",
-          "Compare APAC and Europe",
-        ].map((prompt) => (
-          <button key={prompt} onClick={() => onAsk(prompt)}>
-            {prompt}
-            <span aria-hidden="true">↗</span>
-          </button>
-        ))}
-      </div>
-    </div>
   );
 }

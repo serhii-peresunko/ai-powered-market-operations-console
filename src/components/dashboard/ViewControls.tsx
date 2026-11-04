@@ -4,6 +4,7 @@ import { isStatus, MARKET_STATUS } from "@/data/types";
 import { periodLabel } from "@/lib/format";
 import { DASHBOARD_MODE } from "@/lib/view";
 import { ALL_STATUSES } from "@/lib/metrics";
+import { VIEW_CONTROLS_TEXT as TEXT } from "./copy";
 
 const UI = {
   viewControls: "view-controls",
@@ -14,7 +15,7 @@ export function ViewControls({ data, view, update }: DashboardProps) {
   return (
     <div className={UI.viewControls}>
       <label>
-        Region
+        {TEXT.region}
         <select
           value={view.region ?? ""}
           onChange={(e) =>
@@ -25,7 +26,7 @@ export function ViewControls({ data, view, update }: DashboardProps) {
             })
           }
         >
-          <option value="">All regions</option>
+          <option value="">{TEXT.allRegions}</option>
           {data.regions.map((item) => (
             <option value={item.id} key={item.id}>
               {item.name}
@@ -34,14 +35,14 @@ export function ViewControls({ data, view, update }: DashboardProps) {
         </select>
       </label>
       <label>
-        Market
+        {TEXT.market}
         <select
           value={view.market ?? ""}
           onChange={(e) =>
             update({ market: e.target.value || undefined, product: undefined })
           }
         >
-          <option value="">All markets</option>
+          <option value="">{TEXT.allMarkets}</option>
           {data.markets
             .filter((item) => !view.region || item.regionId === view.region)
             .map((item) => (
@@ -52,13 +53,13 @@ export function ViewControls({ data, view, update }: DashboardProps) {
         </select>
       </label>
       <label>
-        Product
+        {TEXT.product}
         <select
           value={view.product ?? ""}
           disabled={!view.market}
           onChange={(e) => update({ product: e.target.value || undefined })}
         >
-          <option value="">All products</option>
+          <option value="">{TEXT.allProducts}</option>
           {data.products.map((item) => (
             <option value={item.id} key={item.id}>
               {item.name}
@@ -67,7 +68,7 @@ export function ViewControls({ data, view, update }: DashboardProps) {
         </select>
       </label>
       <label>
-        Reporting period
+        {TEXT.reportingPeriod}
         <select
           value={view.period}
           onChange={(e) => update({ period: e.target.value })}
@@ -81,7 +82,7 @@ export function ViewControls({ data, view, update }: DashboardProps) {
       </label>
       {view.mode === DASHBOARD_MODE.ANALYST && (
         <label>
-          Latest source status
+          {TEXT.latestSourceStatus}
           <select
             value={view.status}
             onChange={(event) => {
@@ -90,10 +91,10 @@ export function ViewControls({ data, view, update }: DashboardProps) {
                 update({ status, market: undefined, product: undefined });
             }}
           >
-            <option value={ALL_STATUSES}>All statuses</option>
-            <option value={MARKET_STATUS.ON_TRACK}>On track</option>
-            <option value={MARKET_STATUS.AT_RISK}>At risk</option>
-            <option value={MARKET_STATUS.OFF_TRACK}>Off track</option>
+            <option value={ALL_STATUSES}>{TEXT.allStatuses}</option>
+            <option value={MARKET_STATUS.ON_TRACK}>{TEXT.onTrack}</option>
+            <option value={MARKET_STATUS.AT_RISK}>{TEXT.atRisk}</option>
+            <option value={MARKET_STATUS.OFF_TRACK}>{TEXT.offTrack}</option>
           </select>
         </label>
       )}
@@ -109,7 +110,7 @@ export function ViewControls({ data, view, update }: DashboardProps) {
           })
         }
       >
-        Reset scope
+        {TEXT.resetScope}
       </button>
     </div>
   );

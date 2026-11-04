@@ -1,6 +1,8 @@
 import type { Dataset, SeriesRow, Status } from "../data/types";
 
 export const ALL_STATUSES = "all";
+const PERCENT_BASE = 100;
+const TEXT = { portfolio: "Portfolio" } as const;
 
 export interface Scope {
   region?: string;
@@ -30,7 +32,7 @@ export function seriesInScope(data: Dataset, scope: Scope): SeriesRow[] {
 }
 
 export function ratio(numerator: number, denominator: number): number | null {
-  return denominator === 0 ? null : (numerator / denominator) * 100;
+  return denominator === 0 ? null : (numerator / denominator) * PERCENT_BASE;
 }
 
 export function summarize(rows: SeriesRow[]) {
@@ -46,7 +48,9 @@ export function summarize(rows: SeriesRow[]) {
   return {
     ...sums,
     growth:
-      sums.priorYear === 0 ? null : (sums.actual / sums.priorYear - 1) * 100,
+      sums.priorYear === 0
+        ? null
+        : (sums.actual / sums.priorYear - 1) * PERCENT_BASE,
     attainment: ratio(sums.actual, sums.forecast),
     gap: sums.actual - sums.forecast,
   };
@@ -80,6 +84,6 @@ export function scopeName(data: Dataset, scope: Scope) {
     data.products.find((item) => item.id === scope.product)?.name ??
     data.markets.find((item) => item.id === scope.market)?.name ??
     data.regions.find((item) => item.id === scope.region)?.name ??
-    "Portfolio"
+    TEXT.portfolio
   );
 }

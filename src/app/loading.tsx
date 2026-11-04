@@ -1,3 +1,4 @@
+import { LOADING_TEXT as TEXT } from "./copy";
 const UI = {
   loadingState: "loading-state",
 } as const;
@@ -5,7 +6,7 @@ const UI = {
 export default function Loading() {
   return (
     <main className={UI.loadingState} role="status">
-      Loading market operations…
+      {TEXT.loadingMarketOperations}
     </main>
   );
 }

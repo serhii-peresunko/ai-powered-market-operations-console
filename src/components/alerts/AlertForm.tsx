@@ -1,23 +1,16 @@
 "use client";
-import { useState, type FormEvent } from "react";
 import type { Dataset } from "@/data/types";
 import { Button } from "@/components/Button";
-import {
-  alertSchema,
-  initialAlert,
-  type AlertInput,
-  ALERT_SCOPE,
-  ALERT_MATCH,
-  ALERT_METRIC,
-} from "@/lib/alerts";
+import { type AlertInput, ALERT_MATCH, ALERT_METRIC } from "@/lib/alerts";
 import { AlertThreshold } from "./AlertThreshold";
+import { AlertScopeFields } from "./AlertScopeFields";
+import { AlertFieldError } from "./AlertFieldError";
+import { useAlertForm } from "./useAlertForm";
+import { ALERT_FORM_TEXT as TEXT } from "./copy";
 
 const UI = {
-  fieldError: "field-error",
   alertDetails: "alert-details",
   srOnly: "sr-only",
-  alertFields: "alert-fields",
-  formField: "form-field",
   conditionFields: "condition-fields",
   matchField: "form-field match-field",
   alertActions: "alert-actions",
@@ -33,105 +26,26 @@ export function AlertForm({
   pending: boolean;
   onSave: (values: AlertInput, fail: boolean) => Promise<void>;
 }) {
-  const [values, setValues] = useState<AlertInput>(initialAlert);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [simulateFailure, setSimulateFailure] = useState(false);
-  const change = (patch: Partial<AlertInput>) =>
-    setValues((previous) => ({ ...previous, ...patch }));
-  const error = (field: string) =>
-    errors[field] ? (
-      <p id={`alert-${field}-error`} className={UI.fieldError}>
-        {errors[field]}
-      </p>
-    ) : null;
-  function submit(event: FormEvent) {
-    event.preventDefault();
-    if (pending) return;
-    const parsed = alertSchema(data).safeParse(values);
-    if (!parsed.success) {
-      setErrors(
-        Object.fromEntries(
-          parsed.error.issues.map((issue) => [
-            String(issue.path[0]),
-            issue.message,
-          ]),
-        ),
-      );
-      requestAnimationFrame(() =>
-        document
-          .getElementById(`alert-${String(parsed.error.issues[0].path[0])}`)
-          ?.focus(),
-      );
-      return;
-    }
-    setErrors({});
-    void onSave(parsed.data, simulateFailure);
-  }
+  const {
+    values,
+    errors,
+    simulateFailure,
+    setSimulateFailure,
+    change,
+    submit,
+  } = useAlertForm(data, pending, onSave);
   return (
     <details className={UI.alertDetails}>
-      <summary>Configure an alert</summary>
+      <summary>{TEXT.configureAnAlert}</summary>
       <form onSubmit={submit} noValidate>
         <fieldset disabled={pending}>
-          <legend className={UI.srOnly}>Alert configuration</legend>
-          <div className={UI.alertFields}>
-            <label className={UI.formField}>
-              Alert name
-              <input
-                id="alert-name"
-                value={values.name}
-                maxLength={60}
-                onChange={(event) => change({ name: event.target.value })}
-                placeholder="Markets below plan"
-                aria-invalid={Boolean(errors.name)}
-                aria-describedby={errors.name ? "alert-name-error" : undefined}
-              />
-              {error("name")}
-            </label>
-            <label className={UI.formField}>
-              Apply to
-              <select
-                value={values.scope}
-                onChange={(event) => {
-                  const scope = event.target.value;
-                  if (
-                    scope === ALERT_SCOPE.PORTFOLIO ||
-                    scope === ALERT_SCOPE.REGION ||
-                    scope === ALERT_SCOPE.MARKET
-                  )
-                    change({ scope, targetId: "" });
-                }}
-              >
-                <option value={ALERT_SCOPE.PORTFOLIO}>All markets</option>
-                <option value={ALERT_SCOPE.REGION}>A region</option>
-                <option value={ALERT_SCOPE.MARKET}>A market</option>
-              </select>
-            </label>
-            {values.scope !== ALERT_SCOPE.PORTFOLIO && (
-              <label className={UI.formField}>
-                {values.scope === ALERT_SCOPE.REGION ? "Region" : "Market"}
-                <select
-                  id="alert-targetId"
-                  value={values.targetId}
-                  onChange={(event) => change({ targetId: event.target.value })}
-                  aria-invalid={Boolean(errors.targetId)}
-                  aria-describedby={
-                    errors.targetId ? "alert-targetId-error" : undefined
-                  }
-                >
-                  <option value="">Choose {values.scope}…</option>
-                  {(values.scope === ALERT_SCOPE.REGION
-                    ? data.regions
-                    : data.markets
-                  ).map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.name}
-                    </option>
-                  ))}
-                </select>
-                {error("targetId")}
-              </label>
-            )}
-          </div>
+          <legend className={UI.srOnly}>{TEXT.alertConfiguration}</legend>
+          <AlertScopeFields
+            data={data}
+            values={values}
+            errors={errors}
+            onChange={change}
+          />
           <fieldset
             id="alert-conditions"
             className={UI.conditionFields}
@@ -140,10 +54,10 @@ export function AlertForm({
               errors.conditions ? "alert-conditions-error" : undefined
             }
           >
-            <legend>Flag a market when</legend>
+            <legend>{TEXT.flagAMarketWhen}</legend>
             <AlertThreshold
               field={ALERT_METRIC.GROWTH}
-              label="Year-on-year growth is below"
+              label={TEXT.yearOnYearGrowthIsBelow}
               enabled={values.growthEnabled}
               value={values.growth}
               error={errors.growth}
@@ -152,16 +66,16 @@ export function AlertForm({
             />
             <AlertThreshold
               field={ALERT_METRIC.ATTAINMENT}
-              label="Forecast attainment is below"
+              label={TEXT.forecastAttainmentIsBelow}
               enabled={values.attainmentEnabled}
               value={values.attainment}
               error={errors.attainment}
               onToggle={(attainmentEnabled) => change({ attainmentEnabled })}
               onChange={(attainment) => change({ attainment })}
             />
-            {error("conditions")}
+            <AlertFieldError field="conditions" error={errors.conditions} />
             <label className={UI.matchField}>
-              Combine conditions
+              {TEXT.combineConditions}
               <select
                 value={values.match}
                 onChange={(event) => {
@@ -171,10 +85,10 @@ export function AlertForm({
                 }}
               >
                 <option value={ALERT_MATCH.ANY}>
-                  Any enabled condition (OR)
+                  {TEXT.anyEnabledConditionOr}
                 </option>
                 <option value={ALERT_MATCH.ALL}>
-                  All enabled conditions (AND)
+                  {TEXT.allEnabledConditionsAnd}
                 </option>
               </select>
             </label>
@@ -186,10 +100,10 @@ export function AlertForm({
                 checked={simulateFailure}
                 onChange={(event) => setSimulateFailure(event.target.checked)}
               />
-              Simulate save failure
+              {TEXT.simulateSaveFailure}
             </label>
-            <Button type="submit" isLoading={pending} loadingText="Saving…">
-              Save alert
+            <Button type="submit" isLoading={pending} loadingText={TEXT.saving}>
+              {TEXT.saveAlert}
             </Button>
           </div>
         </fieldset>

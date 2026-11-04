@@ -3,6 +3,7 @@ import dynamic from "next/dynamic";
 import { MarketTable } from "./MarketTable";
 import type { DashboardProps } from "./types";
 import { DASHBOARD_MODE } from "@/lib/view";
+import { DASHBOARD_CHARTS_TEXT as TEXT } from "./copy";
 const UI = {
   chartLoading: "chart-loading",
 } as const;
@@ -16,24 +17,24 @@ function ChartLoading({ label }: { label: string }) {
 }
 const RevenueTrend = dynamic(() => import("@/components/charts/RevenueTrend"), {
   ssr: false,
-  loading: () => <ChartLoading label="Loading revenue chart…" />,
+  loading: () => <ChartLoading label={TEXT.loadingRevenueChart} />,
 });
 const MarketMap = dynamic(() => import("@/components/charts/MarketMap"), {
   ssr: false,
-  loading: () => <ChartLoading label="Loading country map…" />,
+  loading: () => <ChartLoading label={TEXT.loadingCountryMap} />,
 });
 const ComparisonRadar = dynamic(
   () => import("@/components/charts/ComparisonRadar"),
   {
     ssr: false,
-    loading: () => <ChartLoading label="Loading comparison chart…" />,
+    loading: () => <ChartLoading label={TEXT.loadingComparisonChart} />,
   },
 );
 const PerformanceHeatmap = dynamic(
   () => import("@/components/charts/PerformanceHeatmap"),
   {
     ssr: false,
-    loading: () => <ChartLoading label="Loading heat map…" />,
+    loading: () => <ChartLoading label={TEXT.loadingHeatMap} />,
   },
 );
 

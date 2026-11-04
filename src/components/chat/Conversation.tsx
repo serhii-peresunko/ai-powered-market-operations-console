@@ -5,6 +5,7 @@ import {
   type ChatTurn,
   CHAT_TURN_STATUS,
 } from "./types";
+import { CONVERSATION_TEXT as TEXT } from "./copy";
 
 const UI = {
   conversation: "conversation",
@@ -31,32 +32,30 @@ export function Conversation({
   onRetry: (question: string) => void;
 }) {
   return (
-    <ol className={UI.conversation} aria-label="Conversation">
+    <ol className={UI.conversation} aria-label={TEXT.conversation}>
       {turns.map((turn) => (
         <li key={turn.id}>
           <div className={UI.userMessage}>
-            <span className={UI.messageLabel}>YOU</span>
+            <span className={UI.messageLabel}>{TEXT.you}</span>
             <p>{turn.question}</p>
           </div>
           <article
             className={UI.assistantMessage}
             tabIndex={0}
-            aria-label={`AI answer to ${turn.question}`}
+            aria-label={TEXT.answerLabel(turn.question)}
           >
             <span className={UI.messageLabel}>
               <RiSparklingLine size={12} aria-hidden="true" />
-              AI INTERPRETATION
+              {TEXT.aiInterpretation}
             </span>
             <p className={UI.answerText}>
               {turn.text ||
                 (turn.status === CHAT_TURN_STATUS.STREAMING
-                  ? "Reading the evidence…"
-                  : "No answer received.")}
+                  ? TEXT.reading
+                  : TEXT.empty)}
             </p>
             {turn.status === CHAT_TURN_STATUS.STREAMING && (
-              <p className={UI.generationStatus}>
-                Generating… Evidence and confidence pending.
-              </p>
+              <p className={UI.generationStatus}>{TEXT.generating}</p>
             )}
             {turn.status === CHAT_TURN_STATUS.COMPLETE && turn.completion && (
               <Evidence
@@ -67,9 +66,7 @@ export function Conversation({
               />
             )}
             {turn.status === CHAT_TURN_STATUS.STOPPED && (
-              <p className={UI.notice}>
-                Stopped · Partial answer, not verified.
-              </p>
+              <p className={UI.notice}>{TEXT.stopped}</p>
             )}
             {turn.status === CHAT_TURN_STATUS.ERROR && (
               <p className={UI.errorNotice} role="alert">
@@ -83,7 +80,7 @@ export function Conversation({
                 disabled={busy}
                 onClick={() => onRetry(turn.question)}
               >
-                Retry question
+                {TEXT.retryQuestion}
               </button>
             )}
           </article>

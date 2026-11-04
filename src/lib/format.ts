@@ -1,5 +1,20 @@
-export function money(value: number, currency = "USD", compact = true) {
-  return new Intl.NumberFormat("en-US", {
+export const FORMAT = {
+  locale: "en-US",
+  currency: "USD",
+  percentBase: 100,
+  missingValue: "Unavailable",
+} as const;
+
+export function integer(value: number) {
+  return new Intl.NumberFormat(FORMAT.locale).format(value);
+}
+
+export function money(
+  value: number,
+  currency: string = FORMAT.currency,
+  compact = true,
+) {
+  return new Intl.NumberFormat(FORMAT.locale, {
     style: "currency",
     currency,
     notation: compact ? "compact" : "standard",
@@ -8,16 +23,16 @@ export function money(value: number, currency = "USD", compact = true) {
 }
 
 export function percent(value: number | null, signed = false) {
-  if (value === null) return "Unavailable";
-  return new Intl.NumberFormat("en-US", {
+  if (value === null) return FORMAT.missingValue;
+  return new Intl.NumberFormat(FORMAT.locale, {
     style: "percent",
     maximumFractionDigits: 1,
     signDisplay: signed ? "exceptZero" : "auto",
-  }).format(value / 100);
+  }).format(value / FORMAT.percentBase);
 }
 
 export function periodLabel(period: string, short = false) {
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat(FORMAT.locale, {
     month: "short",
     ...(short ? {} : { year: "numeric" }),
     timeZone: "UTC",
