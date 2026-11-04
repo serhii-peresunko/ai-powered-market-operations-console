@@ -38,7 +38,7 @@ I also kept the source status and market share tied to the latest period. The da
 
 For display, I used `Intl` formatters for money, percentages, and dates. Dates use UTC so a period label doesn't change with the browser's time zone. Currency labels come from the dataset, which uses USD.
 
-The main functions are in [metric helpers](../src/lib/metrics.ts) and [formatters](../src/lib/format.ts).
+The main functions are in [metric helpers](../src/shared/lib/metrics.ts) and [formatters](../src/shared/lib/format.ts).
 
 ### 5. Organize the work and checks
 
@@ -64,7 +64,7 @@ I used `readView` to validate URL values. It rejects unknown IDs and periods, ap
 
 For the map and heat map, I keep the other markets in the selected region and status scope visible. Selecting Germany should still let me compare it with its peers. The detailed table follows the full market and product selection. Radar comparisons stay explicit through their own picker.
 
-The code is in [URL state](../src/lib/view.ts) and [the dashboard view hook](../src/components/dashboard/useDashboardView.ts).
+The code is in [URL state](../src/features/dashboard/view.ts) and [the dashboard view hook](../src/features/dashboard/useDashboardView.ts).
 
 ### 3. Give the overview a clear starting point
 
@@ -109,7 +109,7 @@ I added a failure toggle to make that path easy to check, and I block another sa
 
 As the form grew, I split its responsibilities. `AlertForm` handles the layout, `useAlertForm` handles input and validation, `useAlertRules` handles saving and rollback, and `SavedAlerts` displays the rules. That made the save flow easier to follow without adding a form framework.
 
-The implementation is in [alert rules and validation](../src/lib/alerts.ts) and [the save hook](../src/components/alerts/useAlertRules.ts).
+The implementation is in [alert rules and validation](../src/features/alerts/alerts.ts) and [the save hook](../src/features/alerts/useAlertRules.ts).
 
 ### 8. Make the charts usable beyond their colors
 
@@ -121,23 +121,27 @@ Browser checks caught contrast and accessible-name issues, which I fixed. They a
 
 ### 9. Make the code easier to read
 
-The larger components were mixing too many things: text, styles, calculations, and rendering. I split `MarketConsole` into the workspace, header, summary, charts, and priorities. I used `Panel` and `DataTable` for the repeated panel and table structure.
+The larger components were mixing too many things: text, styles, calculations, and rendering. I kept `MarketConsole` focused on the dashboard header, summary, charts, and priorities. I used `Panel` and `DataTable` for the repeated panel and table structure.
 
 I moved styles into local `UI` objects and presentation text into feature `copy.ts` files. I kept complete messages together rather than extracting individual punctuation marks or joining sentence fragments in JSX. Counts, currency labels, comparison limits, and legend descriptions now use the dataset or shared configuration.
 
-`MarketMap` needed particular attention. I moved the country shapes into `MarketMapCanvas` and the calculations into [the map helper](../src/lib/market-map.ts). Growth and attainment use fixed percentage thresholds so their bands keep the same meaning across scopes. Revenue uses 20%, 40%, 60%, and 80% of the largest value in scope to create five equal bands. These bands control the display; they don't define alerts or change source status.
+`MarketMap` needed particular attention. I moved the country shapes into `MarketMapCanvas` and the calculations into [the map helper](../src/features/dashboard/charts/market-map.ts). Growth and attainment use fixed percentage thresholds so their bands keep the same meaning across scopes. Revenue uses 20%, 40%, 60%, and 80% of the largest value in scope to create five equal bands. These bands control the display; they don't define alerts or change source status.
 
 I also separated heat-map data, keyboard navigation, and sortable table data. Market summaries group facts in one pass, and trends group rows by period. I memoized the chart models so moving over a country or changing keyboard focus doesn't recalculate all the data. I added tests for markets and periods with no matching facts, since those should remain visible with unavailable percentages.
 
 Another browser test caught a race between filter changes. Selecting a market and then quickly changing the period could apply the second change to an older view and clear the market. I fixed the update hook to read the current browser URL before applying a patch. I added a regression test that changes market, period, and product before React renders again.
 
-I kept these changes inside the existing components and helpers. I didn't add a service layer, state framework, or more runtime dependencies.
+I then grouped the code by feature. Dashboard, assistant, and alerts each keep their components, hooks, helpers, copy, styles, and tests together under `src/features`. Shared UI, market calculations, formatting, and contracts live in `src/shared`. The source JSON stays in `src/data`.
+
+I put the shell and feature integration in `app/_components/MarketWorkspace`. That keeps the features independent: the dashboard receives its view, callbacks, and alert panel from the app instead of importing another feature. I added ESLint rules to check the dependency direction and prevent frontend imports of server modules or answer fixtures.
+
+I didn't add a service layer, state framework, or more runtime dependencies.
 
 ## Assistant
 
 ### 1. Keep the supplied mock behavior
 
-I adapted the fixture endpoint for `POST /api/chat`. It matches questions against the supplied keywords, uses the fallback for unsupported questions, and validates input before starting a stream.
+I kept `app/api/chat/route.ts` as the entry point for `POST /api/chat` and moved the handler and fixture loader into `features/assistant/server`. The handler matches questions against the supplied keywords, uses the fallback for unsupported questions, and validates input before starting a stream.
 
 The handler sends tokens with their whitespace, followed by completion metadata. It supports the error fixture and stops enqueueing tokens after cancellation.
 
@@ -151,7 +155,7 @@ The parser handles UTF-8 characters split across chunks, incomplete frames, mult
 
 I also check the size of complete and partial frames. Checking only the remaining buffer would let a large complete event bypass the limit. Malformed JSON gets a readable error message, and cleanup cancels the reader and releases its lock. A large network chunk is still valid when it contains several small, valid events.
 
-The code is in [the chat transport and parser](../src/lib/chat.ts).
+The code is in [the chat transport and parser](../src/features/assistant/chat.ts).
 
 ### 3. Separate the request from the interface
 
@@ -159,7 +163,7 @@ I put request state, turn updates, cancellation, and unmount cleanup in `useChat
 
 `ChatComposer` handles input and keyboard behavior. `Conversation` renders turns and their states. `useChatScroll` follows new output while the reader is near the bottom, but lets them scroll back through earlier messages. I gave the welcome screen and citation list their own components as well.
 
-I tested cancellation on unmount and the guard against overlapping requests. The main hook is [useChat](../src/components/chat/useChat.ts).
+I tested cancellation on unmount and the guard against overlapping requests. The main hook is [useChat](../src/features/assistant/useChat.ts).
 
 ### 4. Link answers back to the data
 
@@ -167,7 +171,7 @@ I resolve citations against real market, region, product, and period IDs. A vali
 
 A normal citation click opens the exact scope and period in analyst mode, clears the source-status filter, and moves focus to the dashboard heading. I kept a real URL in the link so it can be shared or opened with the browser's normal modifier-click behavior.
 
-I moved reference validation and label construction into [one citation helper](../src/lib/citations.ts). That keeps navigation rules out of the evidence renderer.
+I moved reference validation and label construction into [one citation helper](../src/features/assistant/citations.ts). That keeps navigation rules out of the evidence renderer.
 
 ### 5. Show uncertainty and partial answers clearly
 
@@ -179,7 +183,7 @@ I render answers as plain text. I use a separate polite status message for gener
 
 ### 6. Connect it to the dashboard
 
-I used `ConsoleWithAssistant` to add the assistant through the dashboard's composition slot. Dashboard modules handle selection and data presentation, while assistant modules handle the conversation. Following a citation connects the two through the shared view.
+I connect the assistant, dashboard, and alerts in `app/_components/MarketWorkspace`. Dashboard modules handle data presentation, and assistant modules handle the conversation. The app passes the selected view and a navigation callback between them. Shared contracts and URL serialization let citations open the dashboard without importing its internal implementation.
 
 The generated answers still use the fixtures' fixed scope. I didn't implement dashboard-aware answers, which were an optional stretch goal.
 
