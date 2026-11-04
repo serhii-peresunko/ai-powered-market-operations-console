@@ -3,6 +3,7 @@ import { data } from "@/data";
 import { Suspense } from "react";
 import { LOADING_TEXT as TEXT } from "./copy";
 
+
 const UI = {
   loadingState: "loading-state",
 } as const;
