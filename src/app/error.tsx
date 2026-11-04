@@ -1,5 +1,6 @@
 "use client";
 import { Button } from "@/components/Button";
+import { ERROR_TEXT as TEXT } from "./copy";
 
 const UI = {
   recoveryPage: "recovery-page",
@@ -14,11 +15,11 @@ export default function ErrorPage({
 }) {
   return (
     <main className={UI.recoveryPage}>
-      <p className={UI.eyebrow}>MARKET OPERATIONS</p>
-      <h1>This view couldn’t be loaded.</h1>
-      <p>Your URL selection is preserved. Try loading the view again.</p>
-      <Button onClick={retry}>Try again</Button>
-      <a href="?">Return to portfolio overview</a>
+      <p className={UI.eyebrow}>{TEXT.eyebrow}</p>
+      <h1>{TEXT.title}</h1>
+      <p>{TEXT.description}</p>
+      <Button onClick={retry}>{TEXT.retry}</Button>
+      <a href="?">{TEXT.returnToOverview}</a>
     </main>
   );
 }
