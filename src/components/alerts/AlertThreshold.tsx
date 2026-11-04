@@ -1,5 +1,5 @@
 import { AlertFieldError } from "./AlertFieldError";
-import { alertThresholds, ALERT_METRIC } from "@/lib/alerts";
+import { alertThresholds } from "@/lib/alerts";
 import { ALERT_THRESHOLD_TEXT as TEXT } from "./copy";
 
 const UI = {
@@ -39,10 +39,7 @@ export function AlertThreshold({
           {label}
         </label>
         <label className={UI.thresholdInput}>
-          <span className={UI.srOnly}>
-            {field === ALERT_METRIC.GROWTH ? TEXT.growth : TEXT.attainment}
-            {TEXT.threshold}
-          </span>
+          <span className={UI.srOnly}>{TEXT.thresholdLabel(field)}</span>
           <input
             id={`alert-${field}`}
             type="number"

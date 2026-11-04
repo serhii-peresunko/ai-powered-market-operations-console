@@ -3,7 +3,7 @@ import { ViewControls } from "./ViewControls";
 import { scopeName, ALL_STATUSES } from "@/lib/metrics";
 import { periodLabel } from "@/lib/format";
 import { DASHBOARD_MODE } from "@/lib/view";
-import { DASHBOARD_HEADER_TEXT as TEXT } from "./copy";
+import { STATUS_LABELS, DASHBOARD_HEADER_TEXT as TEXT } from "./copy";
 
 const UI = {
   topbar: "topbar",
@@ -67,7 +67,7 @@ export function DashboardHeader({ data, view, update }: DashboardProps) {
           )}
         </nav>
         <span className={UI.sourcePill}>
-          <span aria-hidden="true">{TEXT.sourceIcon}</span>
+          <span aria-hidden="true">{TEXT.sourceIcon}</span>{" "}
           {TEXT.canonicalDataset}
         </span>
       </div>
@@ -75,8 +75,7 @@ export function DashboardHeader({ data, view, update }: DashboardProps) {
         <div>
           <p className={UI.eyebrow}>{TEXT.eyebrow}</p>
           <h1 id="dashboard-heading" tabIndex={-1}>
-            {scopeName(data, view)}
-            {TEXT.overview}
+            {TEXT.title(scopeName(data, view))}
           </h1>
           <p className={UI.secondaryText}>{TEXT.description}</p>
         </div>
@@ -87,9 +86,7 @@ export function DashboardHeader({ data, view, update }: DashboardProps) {
       </header>
       <div className={UI.sourceNote}>
         <span className={UI.sourceDot} aria-hidden="true" />
-        {TEXT.sourceData}
-        {periodLabel(period)}
-        {TEXT.allRevenueIn} {data.meta.currency}
+        {TEXT.sourceNote(periodLabel(period), data.meta.currency)}
         <span className={UI.sourceNoteEnd}>
           {TEXT.syntheticAssignmentDataset}
         </span>
@@ -122,8 +119,7 @@ export function DashboardHeader({ data, view, update }: DashboardProps) {
       <ViewControls data={data} view={view} update={update} />
       {view.status !== ALL_STATUSES && (
         <p className={UI.activeFilter}>
-          {TEXT.latestStatusFilter}
-          {view.status.replaceAll("_", " ")}{" "}
+          {TEXT.latestStatusFilter(STATUS_LABELS[view.status])}{" "}
           <button
             className={UI.textButton}
             onClick={() => update({ status: ALL_STATUSES })}

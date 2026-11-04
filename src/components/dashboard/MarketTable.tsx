@@ -1,6 +1,6 @@
 "use client";
 import type { DashboardProps } from "./types";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Panel } from "@/components/Panel";
 import { DataTable } from "@/components/DataTable";
 import {
@@ -25,7 +25,10 @@ export function MarketTable({ data, view, update }: DashboardProps) {
     key: SORT_KEY.REVENUE,
     ascending: false,
   });
-  const { rows, selectedMarket } = marketTableData(data, view, sort);
+  const { rows, selectedMarket } = useMemo(
+    () => marketTableData(data, view, sort),
+    [data, view, sort],
+  );
   function heading(key: SortKey, label: string) {
     return (
       <th
@@ -73,23 +76,18 @@ export function MarketTable({ data, view, update }: DashboardProps) {
       action={
         <>
           <span className={UI.countChip}>
-            {rows.length} {selectedMarket ? TEXT.products : TEXT.markets}
+            {TEXT.rowCount(rows.length, Boolean(selectedMarket))}
           </span>
         </>
       }
     >
       <DataTable
         label={TEXT.tableLabel}
-        caption={
-          <>
-            {periodLabel(view.period)}
-            {TEXT.revenueIn}
-            {data.meta.currency}
-            {TEXT.sourceDateNote}
-            {periodLabel(data.meta.latestPeriod)}
-            {TEXT.shareUnavailableNote}
-          </>
-        }
+        caption={TEXT.tableCaption(
+          periodLabel(view.period),
+          data.meta.currency,
+          periodLabel(data.meta.latestPeriod),
+        )}
       >
         <thead>
           <tr>

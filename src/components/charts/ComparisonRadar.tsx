@@ -60,7 +60,7 @@ export default function ComparisonRadar({
           <span className={UI.countChip}>{periodLabel(view.period)}</span>
         </>
       }
-      description={<>{TEXT.description}</>}
+      description={TEXT.description}
     >
       <label className={UI.comparisonPicker}>
         <span className={UI.srOnly}>{TEXT.addComparison}</span>
@@ -141,14 +141,10 @@ export default function ComparisonRadar({
       </details>
       <DataTable
         label={TEXT.tableLabel}
-        caption={
-          <>
-            {TEXT.exactSourceDerivedValues}
-            {periodLabel(view.period)}
-            {TEXT.separator} {data.meta.currency}
-            {TEXT.tableHint}
-          </>
-        }
+        caption={TEXT.tableCaption(
+          periodLabel(view.period),
+          data.meta.currency,
+        )}
         summary={TEXT.tableSummary}
       >
         <thead>

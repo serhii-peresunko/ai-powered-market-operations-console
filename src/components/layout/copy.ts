@@ -11,5 +11,5 @@ export const WORKSPACE_TEXT = {
   assistant: "Assistant",
   mo: "MO",
   commercialOperations: "Commercial operations",
-  demoWorkspaceUsd: "Demo workspace · USD",
+  demoWorkspace: (currency: string) => `Demo workspace · ${currency}`,
 } as const;

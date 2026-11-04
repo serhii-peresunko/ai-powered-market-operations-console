@@ -26,3 +26,17 @@ it("supports arrow-key exploration and selects the exact market and period", () 
     period: "2026-03",
   });
 });
+
+it("describes the actual number of displayed periods", () => {
+  const periods = data.meta.periods.slice(-2);
+  const input = { ...data, meta: { ...data.meta, periods } };
+  render(
+    <PerformanceHeatmap
+      data={input}
+      view={readView(new URLSearchParams(), input)}
+      update={vi.fn()}
+    />,
+  );
+  expect(screen.getByText("2 months")).toBeInTheDocument();
+  expect(screen.getAllByRole("columnheader")).toHaveLength(3);
+});

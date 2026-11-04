@@ -26,10 +26,12 @@ const UI = {
 
 export function Workspace({
   marketCount,
+  currency,
   assistant,
   children,
 }: {
   marketCount: number;
+  currency: string;
   assistant?: ReactNode;
   children: ReactNode;
 }) {
@@ -77,7 +79,7 @@ export function Workspace({
           <span className={UI.avatar}>{TEXT.mo}</span>
           <div>
             {TEXT.commercialOperations}
-            <small>{TEXT.demoWorkspaceUsd}</small>
+            <small>{TEXT.demoWorkspace(currency)}</small>
           </div>
         </div>
       </aside>

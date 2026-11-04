@@ -52,7 +52,11 @@ export function MarketConsole({
     });
   });
   return (
-    <Workspace marketCount={data.markets.length} assistant={assistant}>
+    <Workspace
+      marketCount={data.markets.length}
+      currency={data.meta.currency}
+      assistant={assistant}
+    >
       <main id="dashboard" tabIndex={-1} className={UI.dashboardMain}>
         <DashboardHeader data={data} view={view} update={update} />
         <DashboardSummary
@@ -81,10 +85,7 @@ export function MarketConsole({
         <AlertConfigurator data={data} period={view.period} />
         <footer className={UI.dashboardFooter}>
           {TEXT.sourceOfTruthCanonicalDataset}{" "}
-          <span>
-            {TEXT.generated}
-            {data.meta.generatedAt}
-          </span>
+          <span>{TEXT.generated(data.meta.generatedAt)}</span>
         </footer>
       </main>
     </Workspace>
