@@ -2,6 +2,18 @@ import { RiSparklingLine } from "@remixicon/react";
 import { Evidence } from "./Evidence";
 import type { AssistantContext, ChatTurn } from "./types";
 
+const UI = {
+  conversation: "conversation",
+  userMessage: "user-message",
+  messageLabel: "message-label",
+  assistantMessage: "assistant-message",
+  answerText: "answer-text",
+  generationStatus: "generation-status",
+  notice: "notice",
+  errorNotice: "notice error-text",
+  textButton: "text-button",
+} as const;
+
 export function Conversation({
   turns,
   busy,
@@ -15,30 +27,30 @@ export function Conversation({
   onRetry: (question: string) => void;
 }) {
   return (
-    <ol className="conversation" aria-label="Conversation">
+    <ol className={UI.conversation} aria-label="Conversation">
       {turns.map((turn) => (
         <li key={turn.id}>
-          <div className="user-message">
-            <span className="message-label">YOU</span>
+          <div className={UI.userMessage}>
+            <span className={UI.messageLabel}>YOU</span>
             <p>{turn.question}</p>
           </div>
           <article
-            className="assistant-message"
+            className={UI.assistantMessage}
             tabIndex={0}
             aria-label={`AI answer to ${turn.question}`}
           >
-            <span className="message-label">
+            <span className={UI.messageLabel}>
               <RiSparklingLine size={12} aria-hidden="true" />
               AI INTERPRETATION
             </span>
-            <p className="answer-text">
+            <p className={UI.answerText}>
               {turn.text ||
                 (turn.status === "streaming"
                   ? "Reading the evidence…"
                   : "No answer received.")}
             </p>
             {turn.status === "streaming" && (
-              <p className="generation-status">
+              <p className={UI.generationStatus}>
                 Generating… Evidence and confidence pending.
               </p>
             )}
@@ -51,16 +63,18 @@ export function Conversation({
               />
             )}
             {turn.status === "stopped" && (
-              <p className="notice">Stopped · Partial answer, not verified.</p>
+              <p className={UI.notice}>
+                Stopped · Partial answer, not verified.
+              </p>
             )}
             {turn.status === "error" && (
-              <p className="notice error-text" role="alert">
+              <p className={UI.errorNotice} role="alert">
                 {turn.error}
               </p>
             )}
             {(turn.status === "error" || turn.status === "stopped") && (
               <button
-                className="text-button"
+                className={UI.textButton}
                 disabled={busy}
                 onClick={() => onRetry(turn.question)}
               >

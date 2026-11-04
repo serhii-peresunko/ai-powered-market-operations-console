@@ -4,6 +4,10 @@ import type { Dataset } from "@/data/types";
 import { MarketConsole } from "@/components/dashboard/MarketConsole";
 import { Assistant } from "./Assistant";
 
+const UI = {
+  insightNote: "insight-note",
+} as const;
+
 export function ConsoleWithAssistant({ data }: { data: Dataset }) {
   return (
     <MarketConsole
@@ -12,7 +16,7 @@ export function ConsoleWithAssistant({ data }: { data: Dataset }) {
         <Assistant data={data} view={view} onNavigate={onNavigate} />
       )}
       assistantHint={
-        <div className="insight-note">
+        <div className={UI.insightNote}>
           <RiSparklingLine size={17} aria-hidden="true" />
           <span>
             Have a question about a market? Explore the evidence with the
