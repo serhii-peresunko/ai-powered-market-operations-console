@@ -1,7 +1,7 @@
 import { ConsoleWithAssistant } from "@/components/chat/ConsoleWithAssistant";
 import { data } from "@/data";
 import { Suspense } from "react";
-import { PAGE_TEXT as TEXT } from "./copy";
+import { LOADING_TEXT as TEXT } from "./copy";
 
 const UI = {
   loadingState: "loading-state",

@@ -14,7 +14,3 @@ export const APP_TEXT = {
   title: "Market Operations Console",
   description: "AI-powered market operations console.",
 } as const;
-
-export const PAGE_TEXT = {
-  loadingMarketOperations: "Loading market operations…",
-} as const;

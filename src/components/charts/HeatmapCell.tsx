@@ -26,8 +26,13 @@ export function HeatmapCell({
   onKeyDown: (event: KeyboardEvent<HTMLButtonElement>) => void;
   onSelect: () => void;
 }) {
-  const period = periodLabel(cell.period);
-  const variance = percent(cell.variance, true);
+  const description = {
+    value: cell.displayValue,
+    market,
+    period: periodLabel(cell.period),
+    variance: percent(cell.variance, true),
+    anomaly: cell.anomaly?.note,
+  };
   return (
     <td>
       <button
@@ -36,14 +41,8 @@ export function HeatmapCell({
         className={selected ? UI.selected : UI.cell}
         tabIndex={tabIndex}
         aria-pressed={selected}
-        aria-label={TEXT.cellLabel(
-          cell.displayValue,
-          market,
-          period,
-          variance,
-          cell.anomaly?.note,
-        )}
-        title={TEXT.cellTitle(market, period, variance, cell.anomaly?.note)}
+        aria-label={TEXT.cellLabel(description)}
+        title={TEXT.cellTitle(description)}
         onFocus={onFocus}
         onKeyDown={onKeyDown}
         onClick={onSelect}

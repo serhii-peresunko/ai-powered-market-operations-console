@@ -64,10 +64,7 @@ export function DashboardSummary({
       value: (
         <>
           {riskCount}
-          <small>
-            {TEXT.countSeparator}
-            {marketCount}
-          </small>
+          <small>{TEXT.totalMarkets(marketCount)}</small>
         </>
       ),
       tone: UI.metricContext,
@@ -112,16 +109,12 @@ export function SourceNotes({
 }) {
   return (
     <div className={UI.sourceDetail}>
-      <strong>
-        {TEXT.sourceNotes}
-        {market.name}
-      </strong>
+      <strong>{TEXT.sourceNotes(market.name)}</strong>
       <p>
         {market.kpis.anomalies
           .map((a) => TEXT.anomaly(periodLabel(a.period), a.note))
           .join(" ") || TEXT.noAnomalies}{" "}
-        {TEXT.sourceDateNote} {periodLabel(latestPeriod)}
-        {TEXT.fullStop}
+        {TEXT.sourceDateNote(periodLabel(latestPeriod))}
       </p>
     </div>
   );

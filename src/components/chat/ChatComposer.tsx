@@ -22,13 +22,9 @@ export function ChatComposer({
 }) {
   const [question, setQuestion] = useState("");
   function send() {
-    if (
-      busy ||
-      !question.trim() ||
-      question.trim().length > MAX_QUESTION_LENGTH
-    )
-      return;
-    onAsk(question);
+    const message = question.trim();
+    if (busy || !message || message.length > MAX_QUESTION_LENGTH) return;
+    onAsk(message);
     setQuestion("");
   }
   return (

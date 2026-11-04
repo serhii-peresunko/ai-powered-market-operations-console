@@ -12,7 +12,7 @@ export const VARIANCE_BAND = {
   AHEAD: "ahead",
 } as const;
 
-const VARIANCE_LIMIT = {
+export const VARIANCE_LIMIT = {
   severeMiss: -10,
   belowPlan: -2,
   nearPlan: 2,

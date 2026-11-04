@@ -7,7 +7,7 @@ import {
 } from "@/data/types";
 
 export const MAX_QUESTION_LENGTH = 1000;
-const MAX_EVENT_BUFFER_SIZE = 100_000;
+const MAX_EVENT_CHARACTERS = 100_000;
 const TEXT = {
   startFailed: "Unable to start the response. Please retry.",
   invalidEvent: "The assistant returned an invalid event. Please retry.",
@@ -22,6 +22,20 @@ function ssePayload(frame: string) {
     .filter((line) => line.startsWith("data:"))
     .map((line) => line.slice(5).trimStart())
     .join("\n");
+}
+
+// One network chunk can contain many events; enforce the limit per frame.
+function parseChatFrame(frame: string): ChatEvent | null {
+  if (frame.length > MAX_EVENT_CHARACTERS) throw new Error(TEXT.tooLarge);
+  const payload = ssePayload(frame);
+  if (!payload) return null;
+  let value: unknown;
+  try {
+    value = JSON.parse(payload);
+  } catch {
+    throw new Error(TEXT.invalidEvent);
+  }
+  return parseChatEvent(value);
 }
 
 export async function streamChat(
@@ -102,15 +116,14 @@ export async function consumeChat(
       while ((boundary = /\r?\n\r?\n/.exec(buffer))) {
         const frame = buffer.slice(0, boundary.index);
         buffer = buffer.slice(boundary.index + boundary[0].length);
-        const payload = ssePayload(frame);
-        if (!payload) continue;
-        const event = parseChatEvent(JSON.parse(payload) as unknown);
+        const event = parseChatFrame(frame);
+        if (!event) continue;
         if (event.type === CHAT_EVENT_TYPE.ERROR)
           throw new Error(event.message);
         onEvent(event);
         if (event.type === CHAT_EVENT_TYPE.DONE) return;
       }
-      if (buffer.length > MAX_EVENT_BUFFER_SIZE) throw new Error(TEXT.tooLarge);
+      if (buffer.length > MAX_EVENT_CHARACTERS) throw new Error(TEXT.tooLarge);
     }
   } finally {
     await reader.cancel().catch(() => undefined);

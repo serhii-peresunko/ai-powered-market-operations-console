@@ -1,23 +1,41 @@
+import { MAX_COMPARISONS, RADAR_SCALE } from "@/lib/comparisons";
+import { VARIANCE_BAND, VARIANCE_LIMIT } from "@/lib/heatmap";
+import { FORMAT, percent } from "@/lib/format";
+
+interface CellDescription {
+  value: string;
+  market: string;
+  period: string;
+  variance: string;
+  anomaly?: string;
+}
+
+const monthCount = (count: number) =>
+  `${count} ${count === 1 ? "month" : "months"}`;
+
 export const COMPARISON_RADAR_TEXT = {
   removeComparison: (name: string) => `Remove ${name} from comparison`,
   chartLabel: (names: string) =>
     `Normalized revenue weight, growth, and attainment for ${names}. Exact values in the table below.`,
   title: "Performance comparison",
   eyebrow: "SIDE BY SIDE",
-  description:
-    "Compare up to four markets or regions. Product selection applies to every comparison.",
+  description: `Compare up to ${MAX_COMPARISONS} markets or regions. Product selection applies to every comparison.`,
   addComparison: "Add comparison",
-  limitReached: "Four comparisons selected",
+  limitReached: `${MAX_COMPARISONS} comparisons selected`,
   pickerPlaceholder: "Add a market or region…",
   removeIcon: "×",
   empty: "Add a market or region to begin comparing.",
   howToReadTheScales: "How to read the scales",
-  scaleDescription:
-    "All axes run from 0 to 100. Revenue weight is the entity’s share of portfolio revenue for this period and product scope. Growth maps −25% to 0 and +25% to 100. Attainment maps 0% to 0 and 120% to 100. Values outside these ranges are clipped visually; the table retains exact values. Unavailable values are omitted from interpretation.",
+  scaleDescription: [
+    `All axes run from ${RADAR_SCALE.min} to ${RADAR_SCALE.max}.`,
+    "Revenue weight is the entity’s share of portfolio revenue for this period and product scope.",
+    `Growth maps ${percent(RADAR_SCALE.growthMin, true)} to ${RADAR_SCALE.min} and ${percent(RADAR_SCALE.growthMax, true)} to ${RADAR_SCALE.max}.`,
+    `Attainment maps 0% to ${RADAR_SCALE.min} and ${percent(RADAR_SCALE.attainmentMax)} to ${RADAR_SCALE.max}.`,
+    "Values outside these ranges are clipped visually; the table retains exact values. Unavailable values are omitted from interpretation.",
+  ].join(" "),
   tableLabel: "Comparison metrics",
-  exactSourceDerivedValues: "Exact source-derived values · ",
-  separator: " ·",
-  tableHint: ". Use the comparison controls above to change entities.",
+  tableCaption: (period: string, currency: string) =>
+    `Exact source-derived values · ${period} · ${currency}. Use the comparison controls above to change entities.`,
   tableSummary: "View comparison data table",
   entity: "Entity",
   revenue: "Revenue",
@@ -26,24 +44,13 @@ export const COMPARISON_RADAR_TEXT = {
 } as const;
 
 export const PERFORMANCE_HEATMAP_TEXT = {
-  cellLabel: (
-    value: string,
-    market: string,
-    period: string,
-    variance: string,
-    anomaly?: string,
-  ) =>
+  cellLabel: ({ value, market, period, variance, anomaly }: CellDescription) =>
     `${value}${anomaly !== undefined ? "*" : ""} percent; ${market}, ${period}: ${variance} forecast variance${anomaly !== undefined ? `. Market anomaly: ${anomaly}` : ""}`,
-  cellTitle: (
-    market: string,
-    period: string,
-    variance: string,
-    anomaly?: string,
-  ) =>
+  cellTitle: ({ market, period, variance, anomaly }: CellDescription) =>
     `${market} · ${period} · ${variance}${anomaly !== undefined ? ` · ${anomaly}` : ""}`,
   title: "Forecast variance by market",
   eyebrow: "FIND THE PATTERN",
-  history: "24 months",
+  history: monthCount,
   description:
     "Actual vs forecast, in %. Select a cell to focus its market and period. Use arrow keys to move; Enter to select. * marks a source anomaly at market level.",
   tableLabel: "Forecast variance heat map and data table",
@@ -52,11 +59,28 @@ export const PERFORMANCE_HEATMAP_TEXT = {
   market: "Market",
   anomalyMarker: "*",
   empty: "No markets match the current filters.",
-  severeMiss: "≤ −10%",
-  belowPlan: "−10% to −2%",
-  nearPlan: "Within ±2%",
-  abovePlan: "+2% to +10%",
-  ahead: "≥ +10%",
+  legend: [
+    {
+      band: VARIANCE_BAND.SEVERE_MISS,
+      label: `≤ ${percent(VARIANCE_LIMIT.severeMiss, true)}`,
+    },
+    {
+      band: VARIANCE_BAND.BELOW_PLAN,
+      label: `> ${percent(VARIANCE_LIMIT.severeMiss, true)} to < ${percent(VARIANCE_LIMIT.belowPlan, true)}`,
+    },
+    {
+      band: VARIANCE_BAND.NEAR_PLAN,
+      label: `${percent(VARIANCE_LIMIT.belowPlan, true)} to ${percent(VARIANCE_LIMIT.nearPlan, true)}`,
+    },
+    {
+      band: VARIANCE_BAND.ABOVE_PLAN,
+      label: `> ${percent(VARIANCE_LIMIT.nearPlan, true)} to < ${percent(VARIANCE_LIMIT.abovePlan, true)}`,
+    },
+    {
+      band: VARIANCE_BAND.AHEAD,
+      label: `≥ ${percent(VARIANCE_LIMIT.abovePlan, true)}`,
+    },
+  ],
   roundingNote:
     "Cells show rounded percentages; accessible labels and hover text retain one decimal place.",
 } as const;
@@ -102,23 +126,25 @@ export const REVENUE_TREND_TEXT = {
   selected: " · Selected",
   title: "Revenue trajectory",
   eyebrow: "PERFORMANCE OVER TIME",
-  history: "24 months · ",
-  description: " · Actual revenue against plan and the prior year. Selected: ",
-  fullStop: ".",
+  history: (count: number, currency: string) =>
+    `${monthCount(count)} · ${currency}`,
+  description: (scope: string, period: string) =>
+    `${scope} · Actual revenue against plan and the prior year. Selected: ${period}.`,
   actual: "Actual",
   forecast: "Forecast",
   priorYear: "Prior year",
-  chartLabel:
-    "Revenue over 24 months; use arrow keys to explore or open the data table below.",
-  unavailable: "Unavailable",
+  chartLabel: (count: number) =>
+    `Revenue over ${monthCount(count)}; use arrow keys to explore or open the data table below.`,
+  unavailable: FORMAT.missingValue,
   tableLabel: "Revenue data table",
-  revenueIn: " revenue in ",
-  tableHint: ". Select a period to focus the dashboard.",
+  tableCaption: (scope: string, currency: string) =>
+    `${scope} revenue in ${currency}. Select a period to focus the dashboard.`,
   tableSummary: "View revenue data table",
   period: "Period",
 } as const;
 
 export const CHART_BOUNDARY_TEXT = {
+  retry: "Retry chart",
   failure:
     "The chart could not be displayed. Use the data table below to inspect the same values.",
 } as const;

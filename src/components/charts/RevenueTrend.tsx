@@ -56,19 +56,14 @@ export default function RevenueTrend({
       action={
         <>
           <span className={UI.countChip}>
-            {TEXT.history}
-            {data.meta.currency}
+            {TEXT.history(data.meta.periods.length, data.meta.currency)}
           </span>
         </>
       }
-      description={
-        <>
-          {scopeName(data, view)}
-          {TEXT.description}
-          {periodLabel(view.period)}
-          {TEXT.fullStop}
-        </>
-      }
+      description={TEXT.description(
+        scopeName(data, view),
+        periodLabel(view.period),
+      )}
     >
       <div className={UI.chartLegend}>
         <span>
@@ -88,7 +83,7 @@ export default function RevenueTrend({
         <div
           className={UI.trendChart}
           role="group"
-          aria-label={TEXT.chartLabel}
+          aria-label={TEXT.chartLabel(data.meta.periods.length)}
         >
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={points} margin={UI.margin} accessibilityLayer>
@@ -152,14 +147,7 @@ export default function RevenueTrend({
       </ChartBoundary>
       <DataTable
         label={TEXT.tableLabel}
-        caption={
-          <>
-            {scopeName(data, view)}
-            {TEXT.revenueIn}
-            {data.meta.currency}
-            {TEXT.tableHint}
-          </>
-        }
+        caption={TEXT.tableCaption(scopeName(data, view), data.meta.currency)}
         summary={TEXT.tableSummary}
       >
         <thead>
