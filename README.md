@@ -36,3 +36,5 @@ Natural Earth boundaries are public domain. Before submitting, add your own reas
 `MarketConsole` coordinates URL state and composes the workspace, header, summary, chart group, and priorities. `Panel` and `DataTable` own common presentation and accessibility markup. Market filtering and projections live in `metrics.ts`; comparison entity resolution and radar normalization live in `comparisons.ts`.
 
 `AlertForm` owns input and validation. `useAlertRules` owns persistence, pending state, optimistic updates, and rollback. `SavedAlerts` renders the saved rules. The assistant is composed through a view-aware slot, so dashboard modules do not import assistant implementation.
+
+UI copy is grouped in feature `copy.ts` constants, while component classes and chart styles stay in local `UI` objects. Map bands, heat-map rows, and sortable market rows are prepared by pure helpers in `src/lib`. The map uses fixed percentage thresholds for growth and attainment; revenue uses five equal bands relative to the largest market in the selected scope. Derived chart values are calculated from the current selection rather than stored in extra React state.

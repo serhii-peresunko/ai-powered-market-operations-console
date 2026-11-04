@@ -41,9 +41,9 @@ export function HeatmapCell({
           market,
           period,
           variance,
-          cell.anomaly,
+          cell.anomaly?.note,
         )}
-        title={TEXT.cellTitle(market, period, variance, cell.anomaly)}
+        title={TEXT.cellTitle(market, period, variance, cell.anomaly?.note)}
         onFocus={onFocus}
         onKeyDown={onKeyDown}
         onClick={onSelect}

@@ -49,7 +49,7 @@ export function heatmapRows(data: Dataset, view: DashboardView) {
           band: varianceBand(variance),
           anomaly: market.kpis.anomalies.find(
             (item) => item.period === point.period,
-          )?.note,
+          ),
         };
       },
     ),
