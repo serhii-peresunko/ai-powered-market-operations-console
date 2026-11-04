@@ -1,0 +1,111 @@
+export const DASHBOARD_HEADER_TEXT = {
+  drillPath: "Drill path",
+  portfolio: "Portfolio",
+  breadcrumbSeparator: "/",
+  sourceIcon: "●",
+  canonicalDataset: " Canonical dataset",
+  eyebrow: "YOUR PORTFOLIO, IN FOCUS",
+  overview: " overview",
+  description: "The signals that matter. The context to act.",
+  reportingPeriod: "REPORTING PERIOD",
+  sourceData: "Source data · ",
+  allRevenueIn: " · All revenue in",
+  syntheticAssignmentDataset: "Synthetic assignment dataset",
+  audienceView: "Audience view",
+  executiveOverview: "Executive overview",
+  analystDeepDive: "Analyst deep-dive",
+  executiveDescription: "Health, trends & priorities",
+  analystDescription: "Full metrics & every drill path",
+  latestStatusFilter: "Latest status filter: ",
+  clearFilter: "Clear filter",
+} as const;
+
+export const VIEW_CONTROLS_TEXT = {
+  region: "Region",
+  allRegions: "All regions",
+  market: "Market",
+  allMarkets: "All markets",
+  product: "Product",
+  allProducts: "All products",
+  reportingPeriod: "Reporting period",
+  latestSourceStatus: "Latest source status",
+  allStatuses: "All statuses",
+  onTrack: "On track",
+  atRisk: "At risk",
+  offTrack: "Off track",
+  resetScope: "Reset scope",
+} as const;
+
+export const DASHBOARD_SUMMARY_TEXT = {
+  latestStatus: (period: string) => `Latest source status · ${period}`,
+  anomaly: (period: string, note: string) => `${period}: ${note}`,
+  totalRevenue: "Total revenue",
+  vsPriorYear: "vs prior year",
+  forecastAttainment: "Forecast attainment",
+  vsPlan: "vs plan",
+  yearOnYearGrowth: "Year-on-year growth",
+  samePeriodPriorYear: "Same period, prior year",
+  marketsToWatch: "Markets to watch",
+  countSeparator: " / ",
+  selectedScopeHealth: "Selected scope health",
+  sourceNotes: "Source notes · ",
+  noAnomalies: "No anomalies marked in the supplied data.",
+  sourceDateNote: "These are market-level notes; latest status is dated",
+  fullStop: ".",
+} as const;
+
+export const MARKET_TABLE_TEXT = {
+  productTitle: (name: string) => `${name} · Product performance`,
+  products: "products",
+  markets: "markets",
+  positive: "+",
+  ascending: "↑",
+  descending: "↓",
+  unsorted: "↕",
+  selected: " · Selected",
+  title: "Market performance",
+  eyebrow: "THE NUMBERS BEHIND THE SIGNAL",
+  tableLabel: "Detailed performance data",
+  revenueIn: " · Revenue in ",
+  sourceDateNote: ". Status and market share refer to ",
+  shareUnavailableNote:
+    "; market share is unavailable for products or historical periods.",
+  product: "Product",
+  market: "Market",
+  region: "Region",
+  revenue: "Revenue",
+  forecast: "Forecast",
+  variance: "Variance",
+  growth: "Growth",
+  attainment: "Attainment",
+  units: "Units",
+  marketShare: "Market share",
+  latestStatus: "Latest status",
+  unavailable: "Unavailable",
+  empty: "No markets match this selection. Change the scope or status filter.",
+} as const;
+
+export const MARKET_PRIORITIES_TEXT = {
+  positive: "+",
+  marketsToWatch: "Markets to watch",
+  riskEyebrow: "PRIORITIZE",
+  markets: " markets",
+  riskDescription: "Latest source flags, including off-track markets.",
+  empty: "No source-flagged markets in this scope.",
+  largestForecastGaps: "Largest forecast gaps",
+  moversEyebrow: "WHAT MOVED THE NEEDLE",
+  moversDescription: "Ranked by absolute revenue variance from plan.",
+  ofForecast: " of forecast",
+} as const;
+
+export const DASHBOARD_CHARTS_TEXT = {
+  loadingRevenueChart: "Loading revenue chart…",
+  loadingCountryMap: "Loading country map…",
+  loadingComparisonChart: "Loading comparison chart…",
+  loadingHeatMap: "Loading heat map…",
+} as const;
+
+export const MARKET_CONSOLE_TEXT = {
+  sourceOfTruthCanonicalDataset: "Source of truth: canonical dataset",
+  generated: "Generated ",
+} as const;

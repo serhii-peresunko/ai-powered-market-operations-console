@@ -5,6 +5,7 @@ import "./globals.css";
 import "./console.css";
 import "./dashboard.css";
 import "./assistant.css";
+import { APP_TEXT } from "./copy";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,8 +18,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Market Operations Console",
-  description: "AI-powered market operations console.",
+  title: APP_TEXT.title,
+  description: APP_TEXT.description,
 };
 
 const UI = {

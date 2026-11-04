@@ -1,12 +1,16 @@
 import source from "./fixtures.json";
 import { isAnswerKind, isConfidence, type Fixture } from "./types";
 
+const TEXT = {
+  invalidMetadata: (id: string) => `Invalid answer metadata for ${id}`,
+};
+
 function readFixture(
   fixture: typeof source.default | (typeof source.fixtures)[number],
 ): Fixture {
   const { kind, answer } = fixture;
   if (!isAnswerKind(kind) || !isConfidence(answer.confidence)) {
-    throw new Error(`Invalid answer metadata for ${fixture.id}`);
+    throw new Error(TEXT.invalidMetadata(fixture.id));
   }
   return {
     ...fixture,

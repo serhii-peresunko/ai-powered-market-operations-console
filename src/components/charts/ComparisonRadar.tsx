@@ -11,8 +11,15 @@ import {
 import { Panel } from "@/components/Panel";
 import { DataTable } from "@/components/DataTable";
 import { ChartBoundary } from "./ChartBoundary";
-import { comparisonMetrics } from "@/lib/comparisons";
+import {
+  comparisonMetrics,
+  MAX_COMPARISONS,
+  RADAR_SCALE,
+} from "@/lib/comparisons";
 import { money, percent, periodLabel } from "@/lib/format";
+import { COMPARISON_RADAR_TEXT as TEXT } from "./copy";
+
+const SERIES_DASHES = [undefined, "3 3", "6 3", "9 3"] as const;
 
 const UI = {
   colors: ["#087f71", "#5268a4", "#a56b27", "#a74e77"],
@@ -24,7 +31,7 @@ const UI = {
     fill: color,
     fillOpacity: 0.08,
     strokeWidth: 2,
-    strokeDasharray: index === 0 ? undefined : `${index * 3} 3`,
+    strokeDasharray: SERIES_DASHES[index],
   }),
   countChip: "count-chip",
   comparisonPicker: "comparison-picker",
@@ -46,34 +53,29 @@ export default function ComparisonRadar({
   return (
     <Panel
       id="radar"
-      title="Performance comparison"
-      eyebrow="SIDE BY SIDE"
+      title={TEXT.title}
+      eyebrow={TEXT.eyebrow}
       action={
         <>
           <span className={UI.countChip}>{periodLabel(view.period)}</span>
         </>
       }
-      description={
-        <>
-          Compare up to four markets or regions. Product selection applies to
-          every comparison.
-        </>
-      }
+      description={<>{TEXT.description}</>}
     >
       <label className={UI.comparisonPicker}>
-        <span className={UI.srOnly}>Add comparison</span>
+        <span className={UI.srOnly}>{TEXT.addComparison}</span>
         <select
           value=""
-          disabled={selected.length >= 4}
+          disabled={selected.length >= MAX_COMPARISONS}
           onChange={(event) => {
             if (event.target.value)
               update({ compare: [...view.compare, event.target.value] });
           }}
         >
           <option value="">
-            {selected.length >= 4
-              ? "Four comparisons selected"
-              : "Add a market or region…"}
+            {selected.length >= MAX_COMPARISONS
+              ? TEXT.limitReached
+              : TEXT.pickerPlaceholder}
           </option>
           {options
             .filter((item) => !view.compare.includes(item.id))
@@ -91,11 +93,11 @@ export default function ComparisonRadar({
             onClick={() =>
               update({ compare: view.compare.filter((id) => id !== item.id) })
             }
-            aria-label={`Remove ${item.name} from comparison`}
+            aria-label={TEXT.removeComparison(item.name)}
           >
             <i style={UI.swatch(UI.colors[index])} />
             {item.name}
-            <span aria-hidden="true">×</span>
+            <span aria-hidden="true">{TEXT.removeIcon}</span>
           </button>
         ))}
       </div>
@@ -104,14 +106,16 @@ export default function ComparisonRadar({
           <div
             className={UI.radarChart}
             role="img"
-            aria-label={`Normalized revenue weight, growth, and attainment for ${selected.map((item) => item.name).join(", ")}. Exact values in the table below.`}
+            aria-label={TEXT.chartLabel(
+              selected.map((item) => item.name).join(", "),
+            )}
           >
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={points} outerRadius="67%">
                 <PolarGrid {...UI.grid} />
                 <PolarAngleAxis dataKey="axis" tick={UI.axisTick} />
                 <PolarRadiusAxis
-                  domain={[0, 100]}
+                  domain={[RADAR_SCALE.min, RADAR_SCALE.max]}
                   tick={false}
                   axisLine={false}
                 />
@@ -129,37 +133,30 @@ export default function ComparisonRadar({
           </div>
         </ChartBoundary>
       ) : (
-        <p className={UI.emptyPanel}>
-          Add a market or region to begin comparing.
-        </p>
+        <p className={UI.emptyPanel}>{TEXT.empty}</p>
       )}
       <details className={UI.scaleExplanation}>
-        <summary>How to read the scales</summary>
-        <p>
-          All axes run from 0 to 100. Revenue weight is the entity’s share of
-          portfolio revenue for this period and product scope. Growth maps −25%
-          to 0 and +25% to 100. Attainment maps 0% to 0 and 120% to 100. Values
-          outside these ranges are clipped visually; the table retains exact
-          values. Unavailable values are omitted from interpretation.
-        </p>
+        <summary>{TEXT.howToReadTheScales}</summary>
+        <p>{TEXT.scaleDescription}</p>
       </details>
       <DataTable
-        label="Comparison metrics"
+        label={TEXT.tableLabel}
         caption={
           <>
-            Exact source-derived values · {periodLabel(view.period)} ·{" "}
-            {data.meta.currency}. Use the comparison controls above to change
-            entities.
+            {TEXT.exactSourceDerivedValues}
+            {periodLabel(view.period)}
+            {TEXT.separator} {data.meta.currency}
+            {TEXT.tableHint}
           </>
         }
-        summary="View comparison data table"
+        summary={TEXT.tableSummary}
       >
         <thead>
           <tr>
-            <th scope="col">Entity</th>
-            <th scope="col">Revenue</th>
-            <th scope="col">Growth</th>
-            <th scope="col">Attainment</th>
+            <th scope="col">{TEXT.entity}</th>
+            <th scope="col">{TEXT.revenue}</th>
+            <th scope="col">{TEXT.growth}</th>
+            <th scope="col">{TEXT.attainment}</th>
           </tr>
         </thead>
         <tbody>

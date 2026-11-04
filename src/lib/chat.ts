@@ -7,6 +7,22 @@ import {
 } from "@/data/types";
 
 export const MAX_QUESTION_LENGTH = 1000;
+const MAX_EVENT_BUFFER_SIZE = 100_000;
+const TEXT = {
+  startFailed: "Unable to start the response. Please retry.",
+  invalidEvent: "The assistant returned an invalid event. Please retry.",
+  incomplete:
+    "Connection ended before the response was complete. Please retry.",
+  tooLarge: "Assistant event exceeded the supported size.",
+} as const;
+
+function ssePayload(frame: string) {
+  return frame
+    .split(/\r?\n/)
+    .filter((line) => line.startsWith("data:"))
+    .map((line) => line.slice(5).trimStart())
+    .join("\n");
+}
 
 export async function streamChat(
   question: string,
@@ -24,7 +40,7 @@ export async function streamChat(
     !response.body ||
     !response.headers.get("content-type")?.includes("text/event-stream")
   )
-    throw new Error("Unable to start the response. Please retry.");
+    throw new Error(TEXT.startFailed);
   await consumeChat(response.body, onEvent);
 }
 
@@ -67,7 +83,7 @@ export function parseChatEvent(value: unknown): ChatEvent {
       };
     }
   }
-  throw new Error("The assistant returned an invalid event. Please retry.");
+  throw new Error(TEXT.invalidEvent);
 }
 
 export async function consumeChat(
@@ -80,20 +96,13 @@ export async function consumeChat(
   try {
     while (true) {
       const chunk = await reader.read();
-      if (chunk.done)
-        throw new Error(
-          "Connection ended before the response was complete. Please retry.",
-        );
+      if (chunk.done) throw new Error(TEXT.incomplete);
       buffer += decoder.decode(chunk.value, { stream: true });
       let boundary: RegExpExecArray | null;
       while ((boundary = /\r?\n\r?\n/.exec(buffer))) {
         const frame = buffer.slice(0, boundary.index);
         buffer = buffer.slice(boundary.index + boundary[0].length);
-        const payload = frame
-          .split(/\r?\n/)
-          .filter((line) => line.startsWith("data:"))
-          .map((line) => line.slice(5).trimStart())
-          .join("\n");
+        const payload = ssePayload(frame);
         if (!payload) continue;
         const event = parseChatEvent(JSON.parse(payload) as unknown);
         if (event.type === CHAT_EVENT_TYPE.ERROR)
@@ -101,8 +110,7 @@ export async function consumeChat(
         onEvent(event);
         if (event.type === CHAT_EVENT_TYPE.DONE) return;
       }
-      if (buffer.length > 100_000)
-        throw new Error("Assistant event exceeded the supported size.");
+      if (buffer.length > MAX_EVENT_BUFFER_SIZE) throw new Error(TEXT.tooLarge);
     }
   } finally {
     await reader.cancel().catch(() => undefined);

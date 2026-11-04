@@ -3,6 +3,7 @@ import { ViewControls } from "./ViewControls";
 import { scopeName, ALL_STATUSES } from "@/lib/metrics";
 import { periodLabel } from "@/lib/format";
 import { DASHBOARD_MODE } from "@/lib/view";
+import { DASHBOARD_HEADER_TEXT as TEXT } from "./copy";
 
 const UI = {
   topbar: "topbar",
@@ -26,7 +27,7 @@ export function DashboardHeader({ data, view, update }: DashboardProps) {
   return (
     <>
       <div className={UI.topbar}>
-        <nav aria-label="Drill path" className={UI.breadcrumbs}>
+        <nav aria-label={TEXT.drillPath} className={UI.breadcrumbs}>
           <button
             onClick={() =>
               update({
@@ -36,11 +37,11 @@ export function DashboardHeader({ data, view, update }: DashboardProps) {
               })
             }
           >
-            Portfolio
+            {TEXT.portfolio}
           </button>
           {view.region && (
             <>
-              <span>/</span>
+              <span>{TEXT.breadcrumbSeparator}</span>
               <button
                 onClick={() =>
                   update({ market: undefined, product: undefined })
@@ -52,7 +53,7 @@ export function DashboardHeader({ data, view, update }: DashboardProps) {
           )}
           {view.market && (
             <>
-              <span>/</span>
+              <span>{TEXT.breadcrumbSeparator}</span>
               <button onClick={() => update({ product: undefined })}>
                 {data.markets.find((m) => m.id === view.market)?.name}
               </button>
@@ -60,66 +61,74 @@ export function DashboardHeader({ data, view, update }: DashboardProps) {
           )}
           {view.product && (
             <>
-              <span>/</span>
+              <span>{TEXT.breadcrumbSeparator}</span>
               <strong>{scopeName(data, view)}</strong>
             </>
           )}
         </nav>
         <span className={UI.sourcePill}>
-          <span aria-hidden="true">●</span> Canonical dataset
+          <span aria-hidden="true">{TEXT.sourceIcon}</span>
+          {TEXT.canonicalDataset}
         </span>
       </div>
       <header className={UI.pageHeading}>
         <div>
-          <p className={UI.eyebrow}>YOUR PORTFOLIO, IN FOCUS</p>
+          <p className={UI.eyebrow}>{TEXT.eyebrow}</p>
           <h1 id="dashboard-heading" tabIndex={-1}>
-            {scopeName(data, view)} overview
+            {scopeName(data, view)}
+            {TEXT.overview}
           </h1>
-          <p className={UI.secondaryText}>
-            The signals that matter. The context to act.
-          </p>
+          <p className={UI.secondaryText}>{TEXT.description}</p>
         </div>
         <div className={UI.periodStamp}>
-          <span>REPORTING PERIOD</span>
+          <span>{TEXT.reportingPeriod}</span>
           <strong>{periodLabel(period)}</strong>
         </div>
       </header>
       <div className={UI.sourceNote}>
         <span className={UI.sourceDot} aria-hidden="true" />
-        Source data · {periodLabel(period)} · All revenue in{" "}
-        {data.meta.currency}
-        <span className={UI.sourceNoteEnd}>Synthetic assignment dataset</span>
+        {TEXT.sourceData}
+        {periodLabel(period)}
+        {TEXT.allRevenueIn} {data.meta.currency}
+        <span className={UI.sourceNoteEnd}>
+          {TEXT.syntheticAssignmentDataset}
+        </span>
       </div>
       <div className={UI.audienceToolbar}>
-        <div className={UI.modeSwitch} role="group" aria-label="Audience view">
+        <div
+          className={UI.modeSwitch}
+          role="group"
+          aria-label={TEXT.audienceView}
+        >
           <button
             aria-pressed={view.mode === DASHBOARD_MODE.EXECUTIVE}
             onClick={() => update({ mode: DASHBOARD_MODE.EXECUTIVE })}
           >
-            Executive overview
+            {TEXT.executiveOverview}
           </button>
           <button
             aria-pressed={view.mode === DASHBOARD_MODE.ANALYST}
             onClick={() => update({ mode: DASHBOARD_MODE.ANALYST })}
           >
-            Analyst deep-dive
+            {TEXT.analystDeepDive}
           </button>
         </div>
         <span>
           {view.mode === DASHBOARD_MODE.EXECUTIVE
-            ? "Health, trends & priorities"
-            : "Full metrics & every drill path"}
+            ? TEXT.executiveDescription
+            : TEXT.analystDescription}
         </span>
       </div>
       <ViewControls data={data} view={view} update={update} />
       {view.status !== ALL_STATUSES && (
         <p className={UI.activeFilter}>
-          Latest status filter: {view.status.replaceAll("_", " ")}{" "}
+          {TEXT.latestStatusFilter}
+          {view.status.replaceAll("_", " ")}{" "}
           <button
             className={UI.textButton}
             onClick={() => update({ status: ALL_STATUSES })}
           >
-            Clear filter
+            {TEXT.clearFilter}
           </button>
         </p>
       )}

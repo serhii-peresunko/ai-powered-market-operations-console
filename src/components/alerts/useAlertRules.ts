@@ -13,6 +13,11 @@ export const ALERT_FEEDBACK = {
   ERROR: "error",
 } as const;
 
+const TEXT = {
+  saved: "Alert saved in this browser.",
+  failed: "Save failed. Previous rules restored.",
+} as const;
+
 export function useAlertRules(data: Dataset) {
   const [rules, setRules] = useState<AlertRule[]>(() => readAlerts(data));
   const [pendingId, setPendingId] = useState<string | null>(null);
@@ -34,16 +39,13 @@ export function useAlertRules(data: Dataset) {
       await saveAlert(rule, previous, simulateFailure);
       setFeedback({
         kind: ALERT_FEEDBACK.SUCCESS,
-        message: "Alert saved in this browser.",
+        message: TEXT.saved,
       });
     } catch (error) {
       setRules(previous);
       setFeedback({
         kind: ALERT_FEEDBACK.ERROR,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Save failed. Previous rules restored.",
+        message: error instanceof Error ? error.message : TEXT.failed,
       });
     } finally {
       inFlight.current = false;

@@ -3,12 +3,19 @@ import { MAX_QUESTION_LENGTH } from "@/lib/chat";
 import { pickFixture } from "./fixtures";
 import { type ChatEvent, ANSWER_KIND, CHAT_EVENT_TYPE } from "./types";
 
+const TOKEN_DELAY_MS = 35;
+const TEXT = {
+  invalidJson: "Send a JSON question.",
+  invalidQuestion: `Question must contain 1–${MAX_QUESTION_LENGTH} characters.`,
+  failed: "Something went wrong.",
+} as const;
+
 export async function POST(req: Request) {
   let body: unknown;
   try {
     body = await req.json();
   } catch {
-    return Response.json({ error: "Send a JSON question." }, { status: 400 });
+    return Response.json({ error: TEXT.invalidJson }, { status: 400 });
   }
   if (
     !body ||
@@ -18,10 +25,7 @@ export async function POST(req: Request) {
     !body.question.trim() ||
     body.question.length > MAX_QUESTION_LENGTH
   ) {
-    return Response.json(
-      { error: `Question must contain 1–${MAX_QUESTION_LENGTH} characters.` },
-      { status: 400 },
-    );
+    return Response.json({ error: TEXT.invalidQuestion }, { status: 400 });
   }
   const fixture = pickFixture(body.question.trim());
   const encoder = new TextEncoder();
@@ -42,14 +46,14 @@ export async function POST(req: Request) {
         controller.enqueue(
           encode({
             type: CHAT_EVENT_TYPE.ERROR,
-            message: fixture.error ?? "Something went wrong.",
+            message: fixture.error ?? TEXT.failed,
           }),
         );
         controller.close();
         return;
       }
       if (index < tokens.length) {
-        await new Promise((resolve) => setTimeout(resolve, 35));
+        await new Promise((resolve) => setTimeout(resolve, TOKEN_DELAY_MS));
         if (cancelled) return;
         if (req.signal.aborted) {
           controller.close();

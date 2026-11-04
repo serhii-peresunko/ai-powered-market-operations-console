@@ -6,6 +6,9 @@ import type { Dataset, Market } from "@/data/types";
 import type { DashboardProps } from "./types";
 import type { marketMetricsFor } from "@/lib/metrics";
 import { money, percent } from "@/lib/format";
+import { MARKET_PRIORITIES_TEXT as TEXT } from "./copy";
+
+const PRIORITY_LIMIT = 4;
 
 const UI = {
   countChip: "count-chip",
@@ -36,26 +39,25 @@ export function MarketPriorities({
 }) {
   const movers = [...rows]
     .sort((a, b) => Math.abs(b.gap) - Math.abs(a.gap))
-    .slice(0, 4);
+    .slice(0, PRIORITY_LIMIT);
   return (
     <>
       <Panel
         id="market-detail"
-        title="Markets to watch"
-        eyebrow="PRIORITIZE"
+        title={TEXT.marketsToWatch}
+        eyebrow={TEXT.riskEyebrow}
         action={
           <>
-            <span className={UI.countChip}>{risks.length} markets</span>
+            <span className={UI.countChip}>
+              {risks.length}
+              {TEXT.markets}
+            </span>
           </>
         }
-        description={<>Latest source flags, including off-track markets.</>}
+        description={<>{TEXT.riskDescription}</>}
       >
         <div className={UI.riskList}>
-          {risks.length === 0 && (
-            <p className={UI.emptyPanel}>
-              No source-flagged markets in this scope.
-            </p>
-          )}
+          {risks.length === 0 && <p className={UI.emptyPanel}>{TEXT.empty}</p>}
           {risks.map((market) => (
             <div key={market.id} className={UI.riskRow}>
               <span className={UI.countryCode}>{market.iso2}</span>
@@ -85,9 +87,9 @@ export function MarketPriorities({
       <Panel
         id="largest-forecast-gaps"
         action={<RiArrowRightUpLine size={20} aria-hidden="true" />}
-        title="Largest forecast gaps"
-        eyebrow="WHAT MOVED THE NEEDLE"
-        description={<>Ranked by absolute revenue variance from plan.</>}
+        title={TEXT.largestForecastGaps}
+        eyebrow={TEXT.moversEyebrow}
+        description={<>{TEXT.moversDescription}</>}
       >
         <div className={UI.moversList}>
           {movers.map(({ market, gap, attainment }) => (
@@ -103,10 +105,13 @@ export function MarketPriorities({
                 }
               >
                 <strong>{market.name}</strong>
-                <span>{percent(attainment)} of forecast</span>
+                <span>
+                  {percent(attainment)}
+                  {TEXT.ofForecast}
+                </span>
               </button>
               <strong className={gap >= 0 ? UI.positive : UI.negative}>
-                {gap > 0 ? "+" : ""}
+                {gap > 0 ? TEXT.positive : ""}
                 {money(gap, data.meta.currency)}
               </strong>
             </div>

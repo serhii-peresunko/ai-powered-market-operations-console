@@ -3,6 +3,7 @@ import { useState } from "react";
 import { RiArrowUpLine, RiStopFill } from "@remixicon/react";
 import { Button } from "@/components/Button";
 import { MAX_QUESTION_LENGTH } from "@/lib/chat";
+import { CHAT_COMPOSER_TEXT as TEXT } from "./copy";
 
 const UI = {
   composerForm: "composer-form",
@@ -39,11 +40,11 @@ export function ChatComposer({
       }}
     >
       <label htmlFor="chat-question" className={UI.srOnly}>
-        Ask about your markets
+        {TEXT.label}
       </label>
       <textarea
         id="chat-question"
-        placeholder="Ask about your markets…"
+        placeholder={TEXT.placeholder}
         maxLength={MAX_QUESTION_LENGTH}
         rows={2}
         value={question}
@@ -61,26 +62,22 @@ export function ChatComposer({
         aria-describedby="chat-help"
       />
       <div className={UI.composerActions}>
-        <span>
-          {busy
-            ? "Working with source data…"
-            : "Enter to send · Shift+Enter for a new line"}
-        </span>
+        <span>{busy ? TEXT.workingWithSourceData : TEXT.keyboardHint}</span>
         {busy ? (
           <Button
             type="button"
             variant="secondary"
-            aria-label="Stop generation"
+            aria-label={TEXT.stopGeneration}
             onClick={onStop}
           >
             <RiStopFill size={16} aria-hidden="true" />
-            Stop
+            {TEXT.stop}
           </Button>
         ) : (
           <Button
             type="submit"
             disabled={!question.trim()}
-            aria-label="Send message"
+            aria-label={TEXT.sendMessage}
           >
             <RiArrowUpLine size={17} aria-hidden="true" />
           </Button>
