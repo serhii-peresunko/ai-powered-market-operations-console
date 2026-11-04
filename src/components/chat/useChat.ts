@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { MAX_QUESTION_LENGTH, streamChat } from "@/lib/chat";
-import type { ChatTurn } from "./types";
+import { type ChatTurn, CHAT_TURN_STATUS } from "./types";
+import { CHAT_EVENT_TYPE } from "@/data/types";
 
 export function useChat() {
   const [turns, setTurns] = useState<ChatTurn[]>([]);
@@ -27,24 +28,30 @@ export function useChat() {
     setBusy(true);
     setTurns((previous) => [
       ...previous,
-      { id, question, text: "", status: "streaming" },
+      { id, question, text: "", status: CHAT_TURN_STATUS.STREAMING },
     ]);
     try {
       await streamChat(question, controller.signal, (event) => {
         if (controller.signal.aborted) return;
-        if (event.type === "token")
+        if (event.type === CHAT_EVENT_TYPE.TOKEN)
           patchTurn(id, (turn) => ({ text: turn.text + event.value }));
-        if (event.type === "done")
-          patchTurn(id, () => ({ status: "complete", completion: event }));
+        if (event.type === CHAT_EVENT_TYPE.DONE)
+          patchTurn(id, () => ({
+            status: CHAT_TURN_STATUS.COMPLETE,
+            completion: event,
+          }));
       });
       if (controller.signal.aborted)
-        patchTurn(id, () => ({ status: "stopped", completion: undefined }));
+        patchTurn(id, () => ({
+          status: CHAT_TURN_STATUS.STOPPED,
+          completion: undefined,
+        }));
     } catch (error) {
       patchTurn(id, () =>
         controller.signal.aborted
-          ? { status: "stopped", completion: undefined }
+          ? { status: CHAT_TURN_STATUS.STOPPED, completion: undefined }
           : {
-              status: "error",
+              status: CHAT_TURN_STATUS.ERROR,
               error:
                 error instanceof Error
                   ? error.message

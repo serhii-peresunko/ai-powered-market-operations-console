@@ -1,6 +1,7 @@
 import type { Citation, Dataset } from "@/data/types";
-import type { DashboardView } from "./view";
+import { type DashboardView, DASHBOARD_MODE } from "./view";
 import { periodLabel } from "./format";
+import { ALL_STATUSES } from "./metrics";
 
 export function resolveCitation(
   data: Dataset,
@@ -28,8 +29,8 @@ export function resolveCitation(
       market: market?.id,
       product: product?.id,
       period,
-      mode: "analyst",
-      status: "all",
+      mode: DASHBOARD_MODE.ANALYST,
+      status: ALL_STATUSES,
     },
     label: [market?.name ?? region?.name, product?.name, periodLabel(period)]
       .filter(Boolean)

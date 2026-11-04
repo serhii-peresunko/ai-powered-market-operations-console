@@ -1,6 +1,7 @@
 import { resolveCitation } from "@/lib/citations";
 import { viewParams } from "@/lib/view";
 import type { AssistantContext, ChatCompletion } from "./types";
+import { ANSWER_KIND, CONFIDENCE } from "@/data/types";
 
 const UI = {
   errorNotice: "notice error-text",
@@ -21,7 +22,7 @@ export function Evidence({
   completion,
   onNavigate,
 }: AssistantContext & { completion: ChatCompletion }) {
-  if (completion.kind === "error")
+  if (completion.kind === ANSWER_KIND.ERROR)
     return (
       <p className={UI.errorNotice}>
         The response failed. Treat any text above as incomplete.
@@ -31,7 +32,7 @@ export function Evidence({
     <div className={UI.answerEvidence}>
       <div className={UI.confidenceLine}>
         <span className={UI.confidence(completion.confidence)}>
-          {completion.confidence === "high" ? "●" : "◐"}{" "}
+          {completion.confidence === CONFIDENCE.HIGH ? "●" : "◐"}{" "}
           {completion.confidence[0].toUpperCase() +
             completion.confidence.slice(1)}{" "}
           confidence
@@ -40,13 +41,13 @@ export function Evidence({
           Fixture metadata
         </span>
       </div>
-      {completion.kind === "abstain" && (
+      {completion.kind === ANSWER_KIND.ABSTAIN && (
         <p className={UI.notice}>
           Cannot answer from the provided data. No forecast has been generated.
         </p>
       )}
-      {(completion.kind === "low_confidence" ||
-        completion.confidence === "low") && (
+      {(completion.kind === ANSWER_KIND.LOW_CONFIDENCE ||
+        completion.confidence === CONFIDENCE.LOW) && (
         <p className={UI.notice}>
           Directional interpretation. The available evidence does not support a
           precise conclusion.
