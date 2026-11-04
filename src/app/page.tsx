@@ -1,9 +1,14 @@
 import { Card } from "@/components/Card";
 
+const UI = {
+  recoveryPage: "recovery-page",
+  eyebrow: "eyebrow",
+} as const;
+
 export default function Home() {
   return (
-    <main className="recovery-page">
-      <p className="eyebrow">MARKET OPERATIONS</p>
+    <main className={UI.recoveryPage}>
+      <p className={UI.eyebrow}>MARKET OPERATIONS</p>
       <h1>Market operations console</h1>
       <p>A workspace for understanding portfolio performance across markets.</p>
       <Card>

@@ -19,9 +19,15 @@ export const metadata: Metadata = {
   description: "AI-powered market operations console.",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
+const UI = {
+  fonts: `${geistSans.variable} ${geistMono.variable}`,
+} as const;
+
+export default function RootLayout({
+  children,
+}: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="en" className={UI.fonts}>
       <body>{children}</body>
     </html>
   );
