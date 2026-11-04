@@ -137,4 +137,5 @@ Map geometry is public-domain [Natural Earth](https://www.naturalearthdata.com/a
 
 `AlertForm` composes the form, `useAlertForm` owns input and validation, `useAlertRules` owns optimistic saving and rollback, and `SavedAlerts` owns rule display. For chat, `useChat` owns request lifetime and turn updates, `useChatScroll` owns scroll-follow behavior, and `ChatComposer` owns input. HTTP/SSE transport and citation resolution live in `src/lib`. These are feature-specific components and hooks, with no additional state or service framework.
 
+
 UI copy is grouped in feature `copy.ts` constants, while component classes and chart styles stay in local `UI` objects. Map bands, heat-map rows, and sortable market rows are prepared by pure helpers in `src/lib`. The map uses fixed percentage thresholds for growth and attainment; revenue uses five equal bands relative to the largest market in the selected scope. Derived chart values are calculated from the current selection rather than stored in extra React state.

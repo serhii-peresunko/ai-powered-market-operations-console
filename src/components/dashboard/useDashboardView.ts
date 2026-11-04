@@ -7,7 +7,9 @@ export function useDashboardView(data: Dataset) {
   const params = useSearchParams();
   const view = readView(params, data);
   function update(patch: Partial<DashboardView>) {
-    const next = readView(viewParams({ ...view, ...patch }), data);
+    // Consecutive controls can fire before React renders the previous update.
+    const current = readView(new URLSearchParams(window.location.search), data);
+    const next = readView(viewParams({ ...current, ...patch }), data);
     window.history.pushState(null, "", `?${viewParams(next)}`);
   }
   return { view, update };
