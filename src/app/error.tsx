@@ -1,5 +1,5 @@
 "use client";
-import { Button } from "@/components/Button";
+import { Button } from "@/shared/ui/Button";
 import { ERROR_TEXT as TEXT } from "./copy";
 
 const UI = {

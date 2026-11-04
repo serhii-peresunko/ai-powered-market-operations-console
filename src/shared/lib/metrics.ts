@@ -1,4 +1,4 @@
-import type { Dataset, SeriesRow, Status } from "../data/types";
+import type { Dataset, SeriesRow, Status } from "../types";
 
 export interface Scope {
   region?: string;

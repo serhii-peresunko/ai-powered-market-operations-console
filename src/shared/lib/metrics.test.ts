@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { data } from "../data";
+import { data } from "@/data";
 import {
   metricsFor,
   ratio,

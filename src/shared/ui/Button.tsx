@@ -7,8 +7,8 @@ import { Slot } from "@radix-ui/react-slot";
 import { RiLoader2Fill } from "@remixicon/react";
 import { tv, type VariantProps } from "tailwind-variants";
 
-import { cx } from "@/lib/utils";
-import { focusRing } from "@/lib/utils";
+import { cx } from "@/shared/lib/utils";
+import { focusRing } from "@/shared/lib/utils";
 import { BUTTON_TEXT as TEXT } from "./copy";
 
 const UI = {

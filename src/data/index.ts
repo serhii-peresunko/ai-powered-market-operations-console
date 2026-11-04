@@ -1,5 +1,5 @@
 import source from "./data.json";
-import { isStatus, type Dataset } from "./types";
+import { isStatus, type Dataset } from "@/shared/types";
 
 const TEXT = {
   invalidStatus: (market: string) => `Invalid status for ${market}`,
