@@ -4,6 +4,7 @@ import { Panel } from "@/components/Panel";
 import { AlertForm } from "./AlertForm";
 import { SavedAlerts } from "./SavedAlerts";
 import { useAlertRules, ALERT_FEEDBACK } from "./useAlertRules";
+import { ALERT_CONFIGURATOR_TEXT as TEXT } from "./copy";
 
 const UI = {
   fullWidth: "full-width",
@@ -24,10 +25,10 @@ export default function AlertConfigurator({
     <Panel
       id="alerts"
       className={UI.fullWidth}
-      eyebrow="DEFINE YOUR SIGNALS"
-      title="Alert thresholds"
-      action={<span className={UI.countChip}>Browser-local demo</span>}
-      description="Configure rules for market totals across all products. Custom rules do not change source status or send notifications."
+      eyebrow={TEXT.eyebrow}
+      title={TEXT.title}
+      action={<span className={UI.countChip}>{TEXT.browserLocalDemo}</span>}
+      description={TEXT.description}
     >
       <AlertForm data={data} pending={pendingId !== null} onSave={save} />
       {feedback && (

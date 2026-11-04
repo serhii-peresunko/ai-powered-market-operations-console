@@ -6,6 +6,7 @@ import {
   ALERT_MATCH,
 } from "@/lib/alerts";
 import { periodLabel } from "@/lib/format";
+import { SAVED_ALERTS_TEXT as TEXT } from "./copy";
 
 const UI = {
   savedAlerts: "saved-alerts",
@@ -28,12 +29,10 @@ export function SavedAlerts({
     <div
       className={UI.savedAlerts}
       aria-live="polite"
-      aria-label="Saved alert rules"
+      aria-label={TEXT.savedAlertRules}
     >
       {rules.length === 0 ? (
-        <p className={UI.panelDescription}>
-          No saved rules. Configure one to start watching your markets.
-        </p>
+        <p className={UI.panelDescription}>{TEXT.empty}</p>
       ) : (
         <ul>
           {rules.map((rule) => (
@@ -42,29 +41,31 @@ export function SavedAlerts({
                 <strong>{rule.name}</strong>
                 <p>
                   {rule.scope === ALERT_SCOPE.PORTFOLIO
-                    ? "All markets"
+                    ? TEXT.allMarkets
                     : (rule.scope === ALERT_SCOPE.REGION
                         ? data.regions
                         : data.markets
                       ).find((item) => item.id === rule.targetId)?.name}{" "}
-                  · {rule.match === ALERT_MATCH.ANY ? "Any" : "All"} enabled
-                  conditions · {periodLabel(period)}
+                  {TEXT.separator}
+                  {rule.match === ALERT_MATCH.ANY ? TEXT.any : TEXT.all}
+                  {TEXT.enabledConditions}
+                  {periodLabel(period)}
                 </p>
                 <p>
                   {[
-                    rule.growthEnabled ? `Growth < ${rule.growth}%` : "",
+                    rule.growthEnabled ? TEXT.growthCondition(rule.growth) : "",
                     rule.attainmentEnabled
-                      ? `Attainment < ${rule.attainment}%`
+                      ? TEXT.attainmentCondition(rule.attainment)
                       : "",
                   ]
                     .filter(Boolean)
-                    .join(rule.match === ALERT_MATCH.ANY ? " OR " : " AND ")}
+                    .join(rule.match === ALERT_MATCH.ANY ? TEXT.or : TEXT.and)}
                 </p>
               </div>
               <span className={UI.countChip}>
                 {pendingId === rule.id
-                  ? "Saving…"
-                  : `${matchingMarkets(data, rule, period).length} matching markets`}
+                  ? TEXT.saving
+                  : TEXT.matches(matchingMarkets(data, rule, period).length)}
               </span>
             </li>
           ))}

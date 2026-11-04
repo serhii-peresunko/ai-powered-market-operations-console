@@ -6,6 +6,7 @@ import {
   RiGlobalLine,
   RiSparklingLine,
 } from "@remixicon/react";
+import { WORKSPACE_TEXT as TEXT } from "./copy";
 
 const UI = {
   workspaceWithAssistant: "workspace with-assistant",
@@ -35,46 +36,48 @@ export function Workspace({
   return (
     <div className={assistant ? UI.workspaceWithAssistant : UI.workspace}>
       <a href="#dashboard" className={UI.skipLink}>
-        Skip to dashboard
+        {TEXT.skipToDashboard}
       </a>
-      <aside className={UI.workspaceNav} aria-label="Workspace navigation">
-        <Link href="/" className={UI.brand} title="Market operations home">
+      <aside className={UI.workspaceNav} aria-label={TEXT.workspaceNavigation}>
+        <Link href="/" className={UI.brand} title={TEXT.marketOperationsHome}>
           <span className={UI.brandMark}>
             <RiBarChartBoxLine size={23} aria-hidden="true" />
           </span>
           <span>
-            market<span className={UI.brandLight}>ops</span>
-            <small>PORTFOLIO INTELLIGENCE</small>
+            {TEXT.market}
+            <span className={UI.brandLight}>{TEXT.ops}</span>
+            <small>{TEXT.portfolioIntelligence}</small>
           </span>
         </Link>
-        <p className={UI.navCaption}>WORKSPACE</p>
+        <p className={UI.navCaption}>{TEXT.workspace}</p>
         <a
           href="#dashboard"
-          title="Overview"
+          title={TEXT.overview}
           className={UI.activeNavLink}
           aria-current="page"
         >
           <RiDashboardLine size={19} aria-hidden="true" />
-          <span>Overview</span>
+          <span>{TEXT.overview}</span>
         </a>
-        <a href="#market-detail" title="Markets" className={UI.navLink}>
+        <a href="#market-detail" title={TEXT.markets} className={UI.navLink}>
           <RiGlobalLine size={19} aria-hidden="true" />
-          <span>Markets</span>
+          <span>{TEXT.markets}</span>
           <span className={UI.navCount} aria-hidden="true">
             {marketCount}
           </span>
         </a>
 
         {assistant && (
-          <a href="#assistant" title="Assistant" className={UI.navLink}>
+          <a href="#assistant" title={TEXT.assistant} className={UI.navLink}>
             <RiSparklingLine size={19} aria-hidden="true" />
-            <span>Assistant</span>
+            <span>{TEXT.assistant}</span>
           </a>
         )}
         <div className={UI.navFooter}>
-          <span className={UI.avatar}>MO</span>
+          <span className={UI.avatar}>{TEXT.mo}</span>
           <div>
-            Commercial operations<small>Demo workspace · USD</small>
+            {TEXT.commercialOperations}
+            <small>{TEXT.demoWorkspaceUsd}</small>
           </div>
         </div>
       </aside>

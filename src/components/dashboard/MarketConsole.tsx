@@ -10,6 +10,7 @@ import { DashboardSummary, SourceNotes } from "./DashboardSummary";
 import { DashboardCharts } from "./DashboardCharts";
 import { MarketPriorities } from "./MarketPriorities";
 import { useDashboardView } from "./useDashboardView";
+import { MARKET_CONSOLE_TEXT as TEXT } from "./copy";
 
 const AlertConfigurator = dynamic(
   () => import("@/components/alerts/AlertConfigurator"),
@@ -79,8 +80,11 @@ export function MarketConsole({
         </div>
         <AlertConfigurator data={data} period={view.period} />
         <footer className={UI.dashboardFooter}>
-          Source of truth: canonical dataset{" "}
-          <span>Generated {data.meta.generatedAt}</span>
+          {TEXT.sourceOfTruthCanonicalDataset}{" "}
+          <span>
+            {TEXT.generated}
+            {data.meta.generatedAt}
+          </span>
         </footer>
       </main>
     </Workspace>

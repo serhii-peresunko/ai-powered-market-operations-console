@@ -1,10 +1,11 @@
+import { AlertFieldError } from "./AlertFieldError";
 import { alertThresholds, ALERT_METRIC } from "@/lib/alerts";
+import { ALERT_THRESHOLD_TEXT as TEXT } from "./copy";
 
 const UI = {
   conditionRow: "condition-row",
   thresholdInput: "threshold-input",
   srOnly: "sr-only",
-  fieldError: "field-error",
 } as const;
 
 export function AlertThreshold({
@@ -39,7 +40,8 @@ export function AlertThreshold({
         </label>
         <label className={UI.thresholdInput}>
           <span className={UI.srOnly}>
-            {field === ALERT_METRIC.GROWTH ? "Growth" : "Attainment"} threshold
+            {field === ALERT_METRIC.GROWTH ? TEXT.growth : TEXT.attainment}
+            {TEXT.threshold}
           </span>
           <input
             id={`alert-${field}`}
@@ -52,14 +54,10 @@ export function AlertThreshold({
             aria-invalid={Boolean(error)}
             aria-describedby={error ? errorId : undefined}
           />
-          <span>%</span>
+          <span>{TEXT.percentSign}</span>
         </label>
       </div>
-      {error && (
-        <p id={errorId} className={UI.fieldError}>
-          {error}
-        </p>
-      )}
+      <AlertFieldError field={field} error={error} />
     </>
   );
 }

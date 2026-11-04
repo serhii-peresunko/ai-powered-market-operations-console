@@ -3,65 +3,29 @@ import type { DashboardProps } from "./types";
 import { useState } from "react";
 import { Panel } from "@/components/Panel";
 import { DataTable } from "@/components/DataTable";
-import { marketMetricsFor, metricsFor } from "@/lib/metrics";
-import { money, percent, periodLabel } from "@/lib/format";
-import { StatusBadge } from "./StatusBadge";
+import {
+  marketTableData,
+  SORT_KEY,
+  type SortKey,
+  type MarketSort,
+} from "@/lib/market-table";
+import { periodLabel } from "@/lib/format";
+import { MarketTableRow } from "./MarketTableRow";
+import { MARKET_TABLE_TEXT as TEXT } from "./copy";
 
-const SORT_KEY = {
-  REVENUE: "actual",
-  GROWTH: "growth",
-  ATTAINMENT: "attainment",
-  GAP: "gap",
-} as const;
-type SortKey = (typeof SORT_KEY)[keyof typeof SORT_KEY];
 const UI = {
   sortButton: "sort-button",
   fullWidth: "full-width",
   countChip: "count-chip",
-  tableLink: "table-link",
-  positive: "positive",
-  negative: "negative",
   emptyPanel: "empty-panel",
 } as const;
 
 export function MarketTable({ data, view, update }: DashboardProps) {
-  const [sort, setSort] = useState<{ key: SortKey; ascending: boolean }>({
+  const [sort, setSort] = useState<MarketSort>({
     key: SORT_KEY.REVENUE,
     ascending: false,
   });
-  const selectedMarket = data.markets.find(
-    (market) => market.id === view.market,
-  );
-  const rows = selectedMarket
-    ? data.products.map((product) => ({
-        id: product.id,
-        name: product.name,
-        market: selectedMarket,
-        ...metricsFor(
-          data,
-          {
-            market: selectedMarket.id,
-            product: product.id,
-            status: view.status,
-          },
-          view.period,
-        ),
-      }))
-    : marketMetricsFor(data, view, view.period).map(
-        ({ market, ...metrics }) => ({
-          id: market.id,
-          name: market.name,
-          market,
-          ...metrics,
-        }),
-      );
-  rows.sort((a, b) => {
-    const av = a[sort.key],
-      bv = b[sort.key];
-    if (av === null) return bv === null ? 0 : 1;
-    if (bv === null) return -1;
-    return (sort.ascending ? 1 : -1) * (av - bv);
-  });
+  const { rows, selectedMarket } = marketTableData(data, view, sort);
   function heading(key: SortKey, label: string) {
     return (
       <th
@@ -85,7 +49,11 @@ export function MarketTable({ data, view, update }: DashboardProps) {
         >
           {label}{" "}
           <span aria-hidden="true">
-            {sort.key === key ? (sort.ascending ? "↑" : "↓") : "↕"}
+            {sort.key === key
+              ? sort.ascending
+                ? TEXT.ascending
+                : TEXT.descending
+              : TEXT.unsorted}
           </span>
         </button>
       </th>
@@ -96,131 +64,65 @@ export function MarketTable({ data, view, update }: DashboardProps) {
       id="analyst-table"
       title={
         <>
-          {selectedMarket
-            ? `${selectedMarket.name} · Product performance`
-            : "Market performance"}
+          {selectedMarket ? TEXT.productTitle(selectedMarket.name) : TEXT.title}
         </>
       }
-      eyebrow="THE NUMBERS BEHIND THE SIGNAL"
+      eyebrow={TEXT.eyebrow}
       titleId="table-title"
       className={UI.fullWidth}
       action={
         <>
           <span className={UI.countChip}>
-            {rows.length} {selectedMarket ? "products" : "markets"}
+            {rows.length} {selectedMarket ? TEXT.products : TEXT.markets}
           </span>
         </>
       }
     >
       <DataTable
-        label="Detailed performance data"
+        label={TEXT.tableLabel}
         caption={
           <>
-            {periodLabel(view.period)} · Revenue in {data.meta.currency}. Status
-            and market share refer to {periodLabel(data.meta.latestPeriod)};
-            market share is unavailable for products or historical periods.
+            {periodLabel(view.period)}
+            {TEXT.revenueIn}
+            {data.meta.currency}
+            {TEXT.sourceDateNote}
+            {periodLabel(data.meta.latestPeriod)}
+            {TEXT.shareUnavailableNote}
           </>
         }
       >
         <thead>
           <tr>
-            <th scope="col">{selectedMarket ? "Product" : "Market"}</th>
-            {!selectedMarket && <th scope="col">Region</th>}
-            {heading(SORT_KEY.REVENUE, "Revenue")}
-            <th scope="col">Forecast</th>
-            {heading(SORT_KEY.GAP, "Variance")}
-            {heading(SORT_KEY.GROWTH, "Growth")}
-            {heading(SORT_KEY.ATTAINMENT, "Attainment")}
-            <th scope="col">Units</th>
+            <th scope="col">{selectedMarket ? TEXT.product : TEXT.market}</th>
+            {!selectedMarket && <th scope="col">{TEXT.region}</th>}
+            {heading(SORT_KEY.REVENUE, TEXT.revenue)}
+            <th scope="col">{TEXT.forecast}</th>
+            {heading(SORT_KEY.GAP, TEXT.variance)}
+            {heading(SORT_KEY.GROWTH, TEXT.growth)}
+            {heading(SORT_KEY.ATTAINMENT, TEXT.attainment)}
+            <th scope="col">{TEXT.units}</th>
             {!selectedMarket && (
               <>
-                <th scope="col">Market share</th>
-                <th scope="col">Latest status</th>
+                <th scope="col">{TEXT.marketShare}</th>
+                <th scope="col">{TEXT.latestStatus}</th>
               </>
             )}
           </tr>
         </thead>
         <tbody>
           {rows.map((row) => (
-            <tr
+            <MarketTableRow
               key={row.id}
-              aria-selected={
-                selectedMarket
-                  ? row.id === view.product
-                  : row.id === view.market
-              }
-            >
-              <th scope="row">
-                <button
-                  className={UI.tableLink}
-                  onClick={() =>
-                    update(
-                      selectedMarket
-                        ? { product: row.id }
-                        : {
-                            region: row.market.regionId,
-                            market: row.id,
-                            product: undefined,
-                          },
-                    )
-                  }
-                >
-                  {row.name}
-                  {selectedMarket && row.id === view.product
-                    ? " · Selected"
-                    : ""}
-                </button>
-              </th>
-              {!selectedMarket && (
-                <td>
-                  <button
-                    className={UI.tableLink}
-                    onClick={() =>
-                      update({
-                        region: row.market.regionId,
-                        market: undefined,
-                        product: undefined,
-                      })
-                    }
-                  >
-                    {
-                      data.regions.find(
-                        (region) => region.id === row.market.regionId,
-                      )?.name
-                    }
-                  </button>
-                </td>
-              )}
-              <td>{money(row.actual, data.meta.currency, false)}</td>
-              <td>{money(row.forecast, data.meta.currency, false)}</td>
-              <td className={row.gap >= 0 ? UI.positive : UI.negative}>
-                {row.gap > 0 ? "+" : ""}
-                {money(row.gap, data.meta.currency, false)}
-              </td>
-              <td>{percent(row.growth, true)}</td>
-              <td>{percent(row.attainment)}</td>
-              <td>{row.units.toLocaleString("en-US")}</td>
-              {!selectedMarket && (
-                <>
-                  <td>
-                    {view.period === data.meta.latestPeriod
-                      ? percent(row.market.kpis.sharePct)
-                      : "Unavailable"}
-                  </td>
-                  <td>
-                    <StatusBadge status={row.market.kpis.status} />
-                  </td>
-                </>
-              )}
-            </tr>
+              row={row}
+              data={data}
+              view={view}
+              update={update}
+              productRows={Boolean(selectedMarket)}
+            />
           ))}
         </tbody>
       </DataTable>
-      {rows.length === 0 && (
-        <p className={UI.emptyPanel}>
-          No markets match this selection. Change the scope or status filter.
-        </p>
-      )}
+      {rows.length === 0 && <p className={UI.emptyPanel}>{TEXT.empty}</p>}
     </Panel>
   );
 }

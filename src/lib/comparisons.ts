@@ -17,7 +17,25 @@ export function comparisonEntities(data: Dataset) {
   ];
 }
 
-const clamp = (value: number) => Math.max(0, Math.min(100, value));
+export const MAX_COMPARISONS = 4;
+export const RADAR_SCALE = {
+  min: 0,
+  max: 100,
+  growthMin: -25,
+  growthMax: 25,
+  attainmentMax: 120,
+} as const;
+const TEXT = {
+  revenue: "Revenue weight",
+  growth: "YoY growth",
+  attainment: "Attainment",
+} as const;
+
+function normalize(value: number | null, minimum: number, maximum: number) {
+  if (value === null) return null;
+  const scaled = ((value - minimum) / (maximum - minimum)) * RADAR_SCALE.max;
+  return Math.max(RADAR_SCALE.min, Math.min(RADAR_SCALE.max, scaled));
+}
 
 export function comparisonMetrics(
   data: Dataset,
@@ -41,31 +59,29 @@ export function comparisonMetrics(
   ).actual;
   const points = [
     {
-      axis: "Revenue weight",
+      axis: TEXT.revenue,
       ...Object.fromEntries(
         selected.map((item) => [
           item.id,
-          portfolio === 0 ? null : (item.actual / portfolio) * 100,
+          portfolio === 0 ? null : (item.actual / portfolio) * RADAR_SCALE.max,
         ]),
       ),
     },
     {
-      axis: "YoY growth",
+      axis: TEXT.growth,
       ...Object.fromEntries(
         selected.map((item) => [
           item.id,
-          item.growth === null ? null : clamp((item.growth + 25) * 2),
+          normalize(item.growth, RADAR_SCALE.growthMin, RADAR_SCALE.growthMax),
         ]),
       ),
     },
     {
-      axis: "Attainment",
+      axis: TEXT.attainment,
       ...Object.fromEntries(
         selected.map((item) => [
           item.id,
-          item.attainment === null
-            ? null
-            : clamp((item.attainment / 120) * 100),
+          normalize(item.attainment, 0, RADAR_SCALE.attainmentMax),
         ]),
       ),
     },

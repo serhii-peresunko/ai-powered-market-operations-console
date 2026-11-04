@@ -16,6 +16,7 @@ import type { Dataset } from "@/data/types";
 import type { DashboardView } from "@/lib/view";
 import { scopeName, trendFor } from "@/lib/metrics";
 import { money, periodLabel } from "@/lib/format";
+import { REVENUE_TREND_TEXT as TEXT } from "./copy";
 
 const UI = {
   margin: { left: 3, right: 12, top: 12, bottom: 0 },
@@ -49,40 +50,45 @@ export default function RevenueTrend({
   return (
     <Panel
       id="trend"
-      title="Revenue trajectory"
-      eyebrow="PERFORMANCE OVER TIME"
+      title={TEXT.title}
+      eyebrow={TEXT.eyebrow}
       className={UI.fullWidth}
       action={
         <>
-          <span className={UI.countChip}>24 months · {data.meta.currency}</span>
+          <span className={UI.countChip}>
+            {TEXT.history}
+            {data.meta.currency}
+          </span>
         </>
       }
       description={
         <>
-          {scopeName(data, view)} · Actual revenue against plan and the prior
-          year. Selected: {periodLabel(view.period)}.
+          {scopeName(data, view)}
+          {TEXT.description}
+          {periodLabel(view.period)}
+          {TEXT.fullStop}
         </>
       }
     >
       <div className={UI.chartLegend}>
         <span>
           <i className={UI.legendActual} />
-          Actual
+          {TEXT.actual}
         </span>
         <span>
           <i className={UI.legendForecast} />
-          Forecast
+          {TEXT.forecast}
         </span>
         <span>
           <i className={UI.legendPrior} />
-          Prior year
+          {TEXT.priorYear}
         </span>
       </div>
       <ChartBoundary>
         <div
           className={UI.trendChart}
           role="group"
-          aria-label="Revenue over 24 months; use arrow keys to explore or open the data table below."
+          aria-label={TEXT.chartLabel}
         >
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={points} margin={UI.margin} accessibilityLayer>
@@ -111,7 +117,7 @@ export default function RevenueTrend({
                 formatter={(value) =>
                   typeof value === "number"
                     ? money(value, data.meta.currency, false)
-                    : "Unavailable"
+                    : TEXT.unavailable
                 }
                 contentStyle={UI.tooltip}
               />
@@ -119,7 +125,7 @@ export default function RevenueTrend({
               <Line
                 type="monotone"
                 dataKey="priorYear"
-                name="Prior year"
+                name={TEXT.priorYear}
                 {...UI.priorYear}
                 dot={false}
                 isAnimationActive={false}
@@ -127,7 +133,7 @@ export default function RevenueTrend({
               <Line
                 type="monotone"
                 dataKey="forecast"
-                name="Forecast"
+                name={TEXT.forecast}
                 {...UI.forecast}
                 dot={false}
                 isAnimationActive={false}
@@ -135,7 +141,7 @@ export default function RevenueTrend({
               <Line
                 type="monotone"
                 dataKey="actual"
-                name="Actual"
+                name={TEXT.actual}
                 {...UI.actual}
                 dot={false}
                 isAnimationActive={false}
@@ -145,21 +151,23 @@ export default function RevenueTrend({
         </div>
       </ChartBoundary>
       <DataTable
-        label="Revenue data table"
+        label={TEXT.tableLabel}
         caption={
           <>
-            {scopeName(data, view)} revenue in {data.meta.currency}. Select a
-            period to focus the dashboard.
+            {scopeName(data, view)}
+            {TEXT.revenueIn}
+            {data.meta.currency}
+            {TEXT.tableHint}
           </>
         }
-        summary="View revenue data table"
+        summary={TEXT.tableSummary}
       >
         <thead>
           <tr>
-            <th scope="col">Period</th>
-            <th scope="col">Actual</th>
-            <th scope="col">Forecast</th>
-            <th scope="col">Prior year</th>
+            <th scope="col">{TEXT.period}</th>
+            <th scope="col">{TEXT.actual}</th>
+            <th scope="col">{TEXT.forecast}</th>
+            <th scope="col">{TEXT.priorYear}</th>
           </tr>
         </thead>
         <tbody>

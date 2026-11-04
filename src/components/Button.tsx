@@ -9,6 +9,7 @@ import { tv, type VariantProps } from "tailwind-variants";
 
 import { cx } from "@/lib/utils";
 import { focusRing } from "@/lib/utils";
+import { BUTTON_TEXT as TEXT } from "./copy";
 
 const UI = {
   root: tv({
@@ -139,7 +140,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           <span className={UI.loading}>
             <RiLoader2Fill className={UI.spinner} aria-hidden="true" />
             <span className={UI.srOnly}>
-              {loadingText ? loadingText : "Loading"}
+              {loadingText ? loadingText : TEXT.loading}
             </span>
             {loadingText ? loadingText : children}
           </span>
