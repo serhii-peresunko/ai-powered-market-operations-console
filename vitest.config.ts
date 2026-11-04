@@ -6,7 +6,7 @@ export default defineConfig({
   esbuild: { jsx: "automatic" },
   test: {
     environment: "jsdom",
-    setupFiles: ["./src/test/setup.ts"],
+    setupFiles: ["./src/shared/test/setup.ts"],
     exclude: ["e2e/**", "node_modules/**", ".next/**"],
   },
 });
