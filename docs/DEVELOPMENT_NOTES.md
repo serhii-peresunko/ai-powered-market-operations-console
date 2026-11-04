@@ -1,204 +1,206 @@
 # Development notes
 
-This draft records the implemented steps and their technical rationale, grouped by the three development branches. Review the explanations and put them in your own words before using them in the submission. The assignment asks for your personal reasoning.
+I split the work into three parts: the initial setup, the dashboard, and the assistant. My main goal was to make the required flows work together and keep the code easy to follow. I used the supplied data and mock answers throughout the project.
 
 ## Initial
 
-### 1. Read the requirements and define the boundaries
+### 1. Understand the assignment
 
-Reviewed the assignment, `CONTRACT.md`, the starter files, and the existing project. The required result was a connected dashboard and streaming assistant, with trustworthy evidence, accessible charts, URL state, a validated form, and meaningful tests.
+I started by reading the brief, `CONTRACT.md`, and the starter files. I wanted to understand the data and the streaming contract before building the screens.
 
-The implementation stayed focused on those front-end requirements. The supplied dataset and answer fixtures were enough to build and verify the experience. Authentication, a real model, data pipelines, live updates, virtualization, and Storybook were left outside this implementation.
+The main requirements were a dashboard with connected charts and drill-downs, a streaming assistant with source citations, a validated form, and tests for the important interactions. I focused on those first. I left authentication, a real model, live updates, virtualization, and Storybook outside this implementation.
 
-### 2. Keep the existing framework and component foundation
+### 2. Keep the setup simple
 
-Retained Next.js App Router, React, strict TypeScript, Tailwind, and the existing Button and Card components. Documented Node.js 24 as the target version and used it in CI.
+I kept Next.js App Router, React, strict TypeScript, Tailwind, and the existing Button and Card components. Next.js let me load the data on the server and keep the mock streaming endpoint in the same project.
 
-This gave the application a server page for loading data and a route handler for the mock stream within one project. Native inputs and selects covered the controls without introducing another component system.
+I used native inputs and selects for the controls. They covered what I needed here, so I didn't add another component library. I documented Node.js 24 as the target version and used it in CI.
 
-### 3. Inspect the canonical data and define contracts
+### 3. Check the data before using it
 
-Added the supplied data and fixtures and defined types for markets, series rows, citations, fixture answers, and streaming events. Narrowed JSON string values such as market status into their allowed unions.
+I added the supplied dataset and fixtures, then defined types for markets, monthly records, citations, answers, and stream events. I also checked string values such as status and confidence against their allowed values when loading the JSON.
 
-The dataset contains 13 markets, four regions, five products, and 24 monthly periods: 1,560 fact rows. Its latest period is May 2026. Source and citation references were checked against real IDs and periods so broken references could be caught before they reached the UI.
+The dataset has 13 markets, four regions, five products, and 24 monthly periods. That gives 1,560 fact rows. The latest period is May 2026, so I used that as the default. Using the current calendar month would open a period with no data.
 
-The application defaults to the dataset's latest period. Using the current calendar month would select a period that the supplied data cannot answer.
+I checked that market, region, product, and period references resolved correctly. I wanted a broken reference to show up in a test rather than become a confusing chart or citation later.
 
-### 4. Establish shared calculations and formatting
+### 4. Put calculations in one place
 
-Created pure functions for selecting markets and fact rows, calculating totals, and preparing trends. Revenue, forecast, prior-year revenue, and units are summed before calculating percentages:
+I created shared functions for filtering records, calculating totals, and preparing chart data. I sum revenue, forecast, prior-year revenue, and units before calculating percentages:
 
 - Growth: `(actual / priorYear - 1) × 100`.
 - Forecast attainment: `(actual / forecast) × 100`.
-- Forecast variance: `actual - forecast`.
+- Revenue variance from forecast: `actual - forecast`.
 
-This avoids averaging market percentages, which would give small and large markets equal weight. A zero denominator produces an unavailable percentage.
+I used totals because averaging market percentages would give a small market the same weight as a large one. When a denominator is zero, I show the percentage as unavailable.
 
-Kept source status and market share tied to their supplied latest-period values. Historical statuses and product or region market share are unavailable because the required source values are missing. `Intl` formatters handle currency, percentages, compact amounts, and UTC-safe period labels. Revenue is explicitly labeled USD.
+I also kept the source status and market share tied to the latest period. The data doesn't provide historical statuses or product and region market shares, so I didn't calculate substitutes for them.
 
-Implementation: [metric helpers](../src/lib/metrics.ts) and [formatters](../src/lib/format.ts).
+For display, I used `Intl` formatters for money, percentages, and dates. Dates use UTC so a period label doesn't change with the browser's time zone. Currency labels come from the dataset, which uses USD.
 
-### 5. Set up styles, checks, and branch boundaries
+The main functions are in [metric helpers](../src/lib/metrics.ts) and [formatters](../src/lib/format.ts).
 
-Established shared tokens for color, typography, surfaces, spacing, and focus. Added Vitest and Testing Library for calculations and component behavior, alongside lint, strict type checking, and production builds.
+### 5. Organize the work and checks
 
-The work initially used smaller implementation branches. It was later consolidated into `feat/initial`, `feat/dashboard`, and `feat/assistant` to match the requested workflow. The branches were rebuilt so dashboard could run without chat, and assistant added its own logic on top of dashboard. Earlier commits remain in `dev`.
+I set up shared styles for colors, spacing, typography, and focus states. I added Vitest and Testing Library for calculations and component behavior, along with lint, type checking, and production builds.
 
-The branch boundaries are documented in [TASKS.md](TASKS.md). Initial contains the shared foundation; accessibility, tests, and documentation stay with the feature they support.
+I grouped the implementation into `feat/initial`, `feat/dashboard`, and `feat/assistant`. Initial contains the shared setup. Dashboard runs on its own, and assistant adds the conversation flow on top of it. I kept tests and accessibility work with the feature they cover so each branch has its own implementation to review.
 
 ## Dashboard
 
-### 1. Load source data and separate state by responsibility
+### 1. Decide where state belongs
 
-The server page imports the static dataset and passes it to the client console. The dataset changes with the application build, so the implementation uses that supplied data directly.
+I load the static dataset in the server page and pass it to the client console. Since the data changes with the application build, I didn't need a fetching or cache library for it.
 
-Dashboard selection belongs in the URL. Temporary interactions, including table sorting, keyboard focus, and unsaved form values, stay in local React state. This keeps the shared view understandable without introducing a global store or query cache for unchanged local data.
+I put the selected region, market, product, period, audience mode, comparisons, map metric, and status filter in the URL. That lets me refresh the page, share a view, and use browser back and forward.
 
-### 2. Build hierarchy navigation and shareable views
+I kept temporary interactions in local React state: table sorting, keyboard focus, the hovered country, and unsaved form values. I didn't need a global store for these.
 
-Added portfolio → region → market → product navigation, breadcrumbs, and a reporting-period control. URL parameters also store audience mode, comparisons, map metric, and the latest-source-status filter.
+### 2. Connect navigation and filters
 
-`readView` validates IDs and periods and resolves a selected market to its region. Native history updates keep the view shareable and support reload and back/forward. Country clicks, table links, heat-map cells, and later citation navigation use the same selection path.
+I added the portfolio → region → market → product drill-down, breadcrumbs, and the reporting-period control. Country clicks, table links, and heat-map cells all update the same dashboard selection.
 
-Comparison selections remain explicit. Map and heat-map peer views show markets in the selected region and status scope; individual market/product details use the full drill path.
+I used `readView` to validate URL values. It rejects unknown IDs and periods, applies defaults, and makes sure a selected market belongs to the correct region.
 
-Implementation: [URL state](../src/lib/view.ts) and [dashboard view hook](../src/components/dashboard/useDashboardView.ts).
+For the map and heat map, I keep the other markets in the selected region and status scope visible. Selecting Germany should still let me compare it with its peers. The detailed table follows the full market and product selection. Radar comparisons stay explicit through their own picker.
 
-### 3. Add health summaries and priorities
+The code is in [URL state](../src/lib/view.ts) and [the dashboard view hook](../src/components/dashboard/useDashboardView.ts).
 
-Replaced the placeholder with revenue, forecast attainment, year-on-year growth, and the number of markets to watch. Added source-status risks and the largest revenue variances from forecast.
+### 3. Give the overview a clear starting point
 
-These give the executive view an immediate starting point: how the portfolio is performing and where attention may be needed. Source-status labels retain their date, including while a historical revenue period is selected. Market anomaly notes remain identified as market-level source notes.
+I added total revenue, forecast attainment, year-on-year growth, and the number of markets to watch. Below that, I show source-flagged markets and the largest revenue gaps from forecast.
 
-The source flags six markets as at risk or off track. That count comes from the dataset, independently of the assistant fixture that highlights three markets.
+I wanted the executive view to answer two questions quickly: how is the selected scope performing, and where should I look next?
 
-### 4. Add the four required visualizations
+I kept the date visible on source-status information, even when a historical revenue period is selected. I also kept anomaly notes identified as market-level notes, since the source doesn't provide a separate explanation for every product.
 
-| Visualization       | Implementation and reason                                                                                                                                                               |
-| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Revenue time-series | Recharts lines for actual, forecast, and prior-year revenue. Different line styles distinguish series, and a reference line marks the selected period.                                  |
-| Country choropleth  | Bundled Natural Earth outlines rendered as SVG. Country selection works without a map account, runtime map requests, or an additional map library.                                      |
-| Comparison radar    | Recharts radar for up to four markets or regions. Disclosed scales normalize revenue contribution, growth, and attainment; the table keeps exact values when the drawing clips a value. |
-| Forecast heat map   | An HTML table of markets and periods, with signed values and a diverging color scale. Cell selection focuses the corresponding market and period.                                       |
+One difference in the supplied material needed care: the source flags six markets as at risk or off track, while an assistant fixture highlights three. I use the dataset for the dashboard count and preserve the fixture as the supplied mock answer.
 
-The heat map fits the monthly dataset and makes sustained forecast misses easy to find. It also provides a direct market-and-period selection interaction. Chart data comes from the shared calculation functions so values remain consistent across views.
+### 4. Build the four charts
 
-### 5. Support executive and analyst audiences
+I used Recharts for the revenue trend and radar. For the country map, I bundled Natural Earth outlines and rendered them as SVG. For the heat map, I used an HTML table.
 
-Added an executive overview for health, trends, and priorities, and an analyst view for all charts, detailed metrics, sorting, and drill paths. Switching modes preserves the selected scope.
+- **Revenue trend:** I show actual, forecast, and prior-year revenue with different line styles. A reference line marks the selected period.
+- **Country map:** I use color to show the selected metric and let the user select a tracked country with a mouse or keyboard. Bundled SVG paths avoid a map account or runtime map requests.
+- **Comparison radar:** I allow up to four markets or regions. The axes use explained scales, and the table keeps the exact values when the drawing clips a value.
+- **Forecast heat map:** I show signed monthly variance by market. Selecting a cell opens that market and period. This makes it easier to spot a sustained miss across several months.
 
-The audiences need different information density. Both modes share the same data and selection state, which avoids maintaining separate calculation paths.
+All four views use the shared calculation functions. I wanted the same selection to produce the same numbers in a chart and its table.
 
-### 6. Add the required validated form
+### 5. Support both audiences
 
-Implemented an alert/threshold configurator. The assignment requires a non-trivial schema-validated form with optimistic saving and rollback, and explicitly suggests alerts as a suitable example.
+I added an executive view for summaries, trends, and priorities, and an analyst view for all charts, detailed metrics, sorting, and drill-downs.
 
-The form supports a name, portfolio/region/market scope, growth and attainment conditions, and AND/OR matching. Zod checks the selected scope, enabled conditions, and numeric limits. The threshold limits are shared by the schema and inputs to keep their rules consistent.
+Both views use the same data and URL state. I only change the amount of information shown, so switching audiences doesn't reset the selection or introduce a second set of calculations.
 
-These are browser-local rules for market totals across all products. They show matching markets for the selected period; they do not change authoritative source status or send notifications.
+### 6. Use alerts for the validated form
 
-### 7. Make saving optimistic and recoverable
+I chose an alert configurator because the assignment asks for a non-trivial validated form and suggests alerts as one example. It also fits the dashboard: a user can define which market results they want to watch.
 
-Added an asynchronous mock save backed by localStorage. A pending rule appears immediately. Success confirms it; failure restores the previous rules and preserves input for retry. A failure toggle makes that path reproducible. Concurrent saves are blocked while one is pending.
+The form supports a name, portfolio/region/market scope, growth and attainment thresholds, and AND/OR matching. I used Zod to check the target, enabled conditions, and numeric limits. The schema and inputs share the same limits so they cannot disagree about a valid threshold.
 
-This demonstrates the requested interaction without introducing a persistence service. During refactoring, `AlertForm` became the form layout, `useAlertForm` took ownership of input and validation, `useAlertRules` kept persistence and rollback, and `SavedAlerts` remained responsible for display.
+I save these rules in localStorage and show matching markets for the selected period. They apply to market totals across all products. They don't change the source status or send notifications.
 
-Implementation: [alert rules and validation](../src/lib/alerts.ts) and [save lifecycle](../src/components/alerts/useAlertRules.ts).
+### 7. Handle save failures
 
-### 8. Add accessible alternatives and recovery
+I made the save asynchronous and optimistic. A new rule appears immediately with a pending state. If the mock save fails, I restore the previous list and keep the form input so the user can retry.
 
-Added data tables for chart values, labeled controls, visible focus, semantic headings, status text/icons, and reduced-motion handling. Country paths support keyboard selection. Heat-map cells use a single Tab entry point with arrow-key, Home/End, and Enter navigation.
+I added a failure toggle to make that path easy to check, and I block another save while one is pending.
 
-The signed heat-map values and table alternatives make the data usable beyond its colors. Recharts error boundaries preserve the accessible table, and a route error boundary offers recovery for a failed view.
+As the form grew, I split its responsibilities. `AlertForm` handles the layout, `useAlertForm` handles input and validation, `useAlertRules` handles saving and rollback, and `SavedAlerts` displays the rules. That made the save flow easier to follow without adding a form framework.
 
-Browser checks found contrast and accessible-name issues, which were corrected. They also exposed a map bug where countries without data could receive a selected outline when no market was selected. The selection condition was corrected to require a tracked market.
+The implementation is in [alert rules and validation](../src/lib/alerts.ts) and [the save hook](../src/components/alerts/useAlertRules.ts).
 
-### 9. Refactor repeated presentation and calculations
+### 8. Make the charts usable beyond their colors
 
-Split `MarketConsole` into workspace layout, header, summary, charts, and priorities. It now coordinates selection and composition. `Panel` owns the repeated heading/description structure; `DataTable` owns the scrollable, labeled table and optional disclosure.
+I added data tables, labels, visible focus, semantic headings, status text and icons, and reduced-motion support. Country paths support keyboard selection. Heat-map cells have one Tab entry point, with arrow keys, Home/End, and Enter for navigation and selection.
 
-Centralized market filtering and metric projections, comparison entity resolution, and radar normalization. This gives charts and tables the same rules and keeps calculation code separately testable. Stateful alert saving was extracted from the form component.
+If a Recharts component fails, I keep its table available and offer a retry. I also added a page-level error state for a failed view.
 
-Grouped complete presentation messages in feature `copy.ts` constants and kept component styles in local `UI` objects. Formatting functions keep sentences together instead of scattering punctuation and whitespace through JSX. History counts, currency labels, comparison limits, and heat-map legend boundaries come from the dataset or shared configuration. Repeated domain values use typed constants. Static text and values derived from filters do not need React state.
+Browser checks caught contrast and accessible-name issues, which I fixed. They also caught a map bug: countries without data could get a selected outline when no market was selected. I changed the condition to require a tracked market before applying that outline.
 
-Simplified `MarketMap` by moving SVG country rendering into `MarketMapCanvas` and data preparation into [the map helper](../src/lib/market-map.ts). Growth and attainment keep their existing fixed percentage thresholds. Revenue bands use 20%, 40%, 60%, and 80% of the largest value in scope, producing five equal ranges. These are display bands, not alert rules or source statuses. Tests cover their boundaries, missing values, and an empty scope.
+### 9. Make the code easier to read
 
-Heat-map rows, variance classification, keyboard navigation, sortable table data, and alert form validation have focused helpers or hooks. Market summaries group facts in one pass, and trend calculations group rows by period. Map, heat-map, and table models use memoization so unrelated local interactions do not repeat aggregation. Sparse-data tests preserve markets and periods without matching facts. The welcome screen and citation list have their own components. An unused stylesheet for an older console layout was removed.
+The larger components were mixing too many things: text, styles, calculations, and rendering. I split `MarketConsole` into the workspace, header, summary, charts, and priorities. I used `Panel` and `DataTable` for the repeated panel and table structure.
 
-The final browser review exposed a race between consecutive filter updates. The URL update hook now reads the current browser URL before applying each patch, so a period change cannot erase a market selection that React has not rendered yet. A regression test applies market, period, and product updates in the same render cycle.
+I moved styles into local `UI` objects and presentation text into feature `copy.ts` files. I kept complete messages together rather than extracting individual punctuation marks or joining sentence fragments in JSX. Counts, currency labels, comparison limits, and legend descriptions now use the dataset or shared configuration.
 
-Chart failures retain the accessible table and offer a retry for transient rendering errors. Citation links retain native modifier-click navigation. Stream limits apply to complete and partial frames, so oversized complete events cannot bypass validation; malformed JSON receives a consistent user-facing error. Valid network chunks containing multiple small events remain supported.
+`MarketMap` needed particular attention. I moved the country shapes into `MarketMapCanvas` and the calculations into [the map helper](../src/lib/market-map.ts). Growth and attainment use fixed percentage thresholds so their bands keep the same meaning across scopes. Revenue uses 20%, 40%, 60%, and 80% of the largest value in scope to create five equal bands. These bands control the display; they don't define alerts or change source status.
 
-The abstractions correspond to repeated UI or existing responsibilities. The refactor added no runtime libraries, service layer, or state framework.
+I also separated heat-map data, keyboard navigation, and sortable table data. Market summaries group facts in one pass, and trends group rows by period. I memoized the chart models so moving over a country or changing keyboard focus doesn't recalculate all the data. I added tests for markets and periods with no matching facts, since those should remain visible with unavailable percentages.
+
+Another browser test caught a race between filter changes. Selecting a market and then quickly changing the period could apply the second change to an older view and clear the market. I fixed the update hook to read the current browser URL before applying a patch. I added a regression test that changes market, period, and product before React renders again.
+
+I kept these changes inside the existing components and helpers. I didn't add a service layer, state framework, or more runtime dependencies.
 
 ## Assistant
 
-### 1. Adapt the supplied fixture endpoint
+### 1. Keep the supplied mock behavior
 
-Used the provided answers and keyword matching to implement `POST /api/chat`. Unsupported questions receive the supplied fallback. Input validation rejects malformed or empty questions and enforces the shared question-length limit.
+I adapted the fixture endpoint for `POST /api/chat`. It matches questions against the supplied keywords, uses the fallback for unsupported questions, and validates input before starting a stream.
 
-The handler streams whitespace-preserving tokens and then sends completion metadata. It also handles the error fixture and stops enqueueing work after cancellation. The explicit runtime setting was removed after the production build showed that it conflicts with the enabled Next.js Cache Components setting.
+The handler sends tokens with their whitespace, followed by completion metadata. It supports the error fixture and stops enqueueing tokens after cancellation.
 
-The assignment evaluates the front-end surface, so fixed fixtures keep the behavior deterministic and make uncertainty, abstention, errors, and long responses reproducible.
+I kept the fixed answers because this assignment is about the front-end experience. They make the normal, uncertain, abstention, and error cases reproducible. I also removed an explicit runtime setting when the production build showed that it conflicted with the enabled Next.js Cache Components setting.
 
-### 2. Implement streaming fetch and robust event parsing
+### 2. Parse the stream carefully
 
-Added a POST fetch request and buffered SSE decoder. The parser handles UTF-8 characters split across chunks, incomplete frames, several events in one chunk, and both supported newline forms. Runtime guards check event shapes before the UI consumes them.
+I used streaming fetch for the POST request and buffered the response before parsing events. A network chunk can contain part of an event or several events, so I couldn't treat each chunk as a complete answer update.
 
-Network chunks do not necessarily align with application events. Buffering preserves the event contract, and an unexpected end before completion becomes an incomplete-response error. Reader cancellation and lock release happen during cleanup.
+The parser handles UTF-8 characters split across chunks, incomplete frames, multiple events in one chunk, and both newline forms. I check event shapes before passing them to the UI. If the stream ends before completion, I show an incomplete-response error.
 
-Implementation: [chat transport and parser](../src/lib/chat.ts).
+I also check the size of complete and partial frames. Checking only the remaining buffer would let a large complete event bypass the limit. Malformed JSON gets a readable error message, and cleanup cancels the reader and releases its lock. A large network chunk is still valid when it contains several small, valid events.
 
-### 3. Separate request lifetime from the interface
+The code is in [the chat transport and parser](../src/lib/chat.ts).
 
-Moved request state, turn updates, cancellation, and unmount cleanup into `useChat`. An active request blocks a second generation. Token updates stay inside the assistant component tree so they do not trigger dashboard recalculation.
+### 3. Separate the request from the interface
 
-`ChatComposer` owns input and keyboard behavior. `Conversation` renders turns and their states. `useChatScroll` follows new output while the reader is near the bottom and allows them to scroll back through earlier content.
+I put request state, turn updates, cancellation, and unmount cleanup in `useChat`. It blocks a second generation while one is active. Token updates stay in the assistant tree, so they don't cause the dashboard to recalculate.
 
-This separates the asynchronous lifecycle from rendering and scrolling. Request cleanup is tested, including cancellation on unmount and protection against overlapping requests.
+`ChatComposer` handles input and keyboard behavior. `Conversation` renders turns and their states. `useChatScroll` follows new output while the reader is near the bottom, but lets them scroll back through earlier messages. I gave the welcome screen and citation list their own components as well.
 
-Implementation: [chat lifecycle](../src/components/chat/useChat.ts).
+I tested cancellation on unmount and the guard against overlapping requests. The main hook is [useChat](../src/components/chat/useChat.ts).
 
-### 4. Make evidence navigable
+### 4. Link answers back to the data
 
-Completion events carry citations to canonical IDs and periods. Citation resolution validates those references, creates a source label, and prepares the corresponding dashboard view. Unresolved or contradictory references produce an unavailable-source state.
+I resolve citations against real market, region, product, and period IDs. A valid citation gets a source label and a dashboard link. An unresolved or contradictory reference shows an unavailable-source message.
 
-Following a valid citation opens the exact scope and period in analyst mode, clears the source-status filter, and moves focus to the dashboard heading. The link also contains a shareable URL.
+A normal citation click opens the exact scope and period in analyst mode, clears the source-status filter, and moves focus to the dashboard heading. I kept a real URL in the link so it can be shared or opened with the browser's normal modifier-click behavior.
 
-During refactoring, reference validation and label construction moved into one pure helper so the evidence renderer does not repeat entity lookups or navigation rules.
+I moved reference validation and label construction into [one citation helper](../src/lib/citations.ts). That keeps navigation rules out of the evidence renderer.
 
-Implementation: [citation resolution](../src/lib/citations.ts).
+### 5. Show uncertainty and partial answers clearly
 
-### 5. Represent uncertainty and incomplete answers honestly
+I only show confidence and citations after the final metadata arrives. Confidence comes from the fixture, so I label it as fixture metadata rather than a measured probability.
 
-Confidence and evidence appear when final metadata arrives. Confidence is labeled as fixture metadata rather than a calibrated probability. Low-confidence answers, abstentions, errors, and stopped responses have distinct presentations.
+Low-confidence answers, abstentions, errors, and stopped responses have different states. If the user stops generation, I keep the partial text but don't attach confidence or citations to it. Errors and interrupted responses offer retry.
 
-Stopping a generation retains partial content without attaching fabricated confidence or citations. Error and interrupted states offer retry. Output is rendered as plain text, and a separate polite status avoids announcing every token to a screen reader.
+I render answers as plain text. I use a separate polite status message for generation progress rather than asking a screen reader to announce every token. I also keep the assistant visually separate from the source dashboard so it is clear which information comes from the data and which comes from an interpretation.
 
-The source dashboard and AI interpretation have different labels and structure. This helps readers verify a claim before acting on it.
+### 6. Connect it to the dashboard
 
-### 6. Connect the assistant without coupling dashboard modules to chat
+I used `ConsoleWithAssistant` to add the assistant through the dashboard's composition slot. Dashboard modules handle selection and data presentation, while assistant modules handle the conversation. Following a citation connects the two through the shared view.
 
-Added `ConsoleWithAssistant` to supply the assistant through the dashboard's composition slot. Dashboard modules own selection and data presentation; assistant modules own conversation behavior. Both use the selected view when a citation is followed.
+The generated answers still use the fixtures' fixed scope. I didn't implement dashboard-aware answers, which were an optional stretch goal.
 
-Answer generation still uses fixed fixture scope. Dashboard-aware answers were an optional stretch goal and remain unimplemented. The fixture that highlights three risks is not an exhaustive list of the six flagged source markets. Likewise, the forecast-miss fixture discusses weaker markets while the latest portfolio total is slightly ahead of forecast.
+I documented the differences between the fixtures and the data. Besides the three highlighted risks versus six source-flagged markets, the forecast-miss fixture discusses weaker markets while the latest portfolio total is slightly ahead of forecast. I kept the supplied material unchanged and made the citations available so users can check the underlying numbers.
 
-Those differences are documented so canned interpretation is not mistaken for a fresh calculation of the current selection.
+### 7. Check the complete flow
 
-### 7. Verify the complete workflows
+The latest full verification passed 46 unit/integration tests, nine browser tests, lint, type checking, and the production build.
 
-The last full implementation verification passed 46 unit/integration tests, nine browser tests, lint, type checking, and the production build. Coverage includes calculations, source references, URL state, SSE parsing, request cancellation, citation navigation, optimistic rollback, keyboard interactions, and error recovery.
+I covered calculations, source references, URL state, stream parsing, cancellation, citations, validation, optimistic rollback, keyboard interactions, and error recovery. The browser tests follow the dashboard → answer → citation → saved alert flow and check history, reload, comparisons, uncertainty, stopped generation, accessibility, and mobile overflow.
 
-Browser flows cover dashboard selection → streamed answer → source citation → alert saving, along with history/reload, comparisons, uncertainty, abstention, errors, accessibility, and mobile overflow. The dashboard-only branch was separately checked for the absence of chat UI and an active chat endpoint.
+I also checked the dashboard branch separately to make sure it runs without chat UI or an active chat endpoint.
 
-The [CI workflow](../.github/workflows/ci.yml) is configured to run verification for pull requests and pushes to `dev` using Node.js 24. It builds the application before browser tests. Deployment is not part of that workflow.
+I configured [CI](../.github/workflows/ci.yml) to run the checks for pull requests and pushes to `dev` on Node.js 24. It builds the app before running the browser tests. It doesn't deploy the app.
 
-### 8. Record the AI workflow, cleanup, and remaining work
+### 8. How I used AI and what I would do next
 
-AI assistance was used for requirement analysis, implementation, refactoring, tests, and investigating failures. No sub-agents were used. Work was checked through source review, strict types, targeted tests, and production browser flows. Business values came from the canonical dataset, and confidence/citations came from the supplied fixtures.
+I used AI to help inspect the requirements, write parts of the implementation and tests, refactor the code, and investigate failures. I didn't use parallel agents. I checked the work through source review, type checking, tests, and browser flows. I used the canonical dataset for business values and kept confidence and citations tied to the supplied fixtures.
 
-Later repository cleanup removed generated visual artifacts and the bundled license file at the requested scope. These were separate changes from the feature implementation. The feature branches were integrated into `dev`; these development notes have their own documentation branch.
+During cleanup, I removed generated visual artifacts, an unused stylesheet, and the bundled license file. I merged the feature work into `dev` and kept these notes on a separate documentation branch.
 
-The remaining production work is to connect hosting, verify deployed streaming through the hosting proxy, measure Core Web Vitals and bundle sizes, set performance budgets, and connect observability with appropriate privacy controls. Real alert persistence and notifications would require additional product and backend work.
+I haven't deployed the app or connected real-user performance monitoring. My next steps would be to set up hosting, check that the deployed proxy streams responses without buffering, and measure Core Web Vitals and bundle sizes. I would then set performance budgets and add error tracking with appropriate privacy controls.
 
-For submission, review the reasoning in this draft, add your personal trade-offs, and prepare the remaining deliverables listed in the brief. The application has no verified live deployment, and real-user performance monitoring has not been connected.
+For a real product, I would also need shared alert storage and notification delivery. The current browser-local rules are enough to demonstrate the form and recovery flow in this assignment.
