@@ -4,6 +4,8 @@ import { MAX_QUESTION_LENGTH, streamChat } from "@/lib/chat";
 import { type ChatTurn, CHAT_TURN_STATUS } from "./types";
 import { CHAT_EVENT_TYPE } from "@/data/types";
 
+const TEXT = { failed: "Unable to complete the response." } as const;
+
 export function useChat() {
   const [turns, setTurns] = useState<ChatTurn[]>([]);
   const [busy, setBusy] = useState(false);
@@ -52,10 +54,7 @@ export function useChat() {
           ? { status: CHAT_TURN_STATUS.STOPPED, completion: undefined }
           : {
               status: CHAT_TURN_STATUS.ERROR,
-              error:
-                error instanceof Error
-                  ? error.message
-                  : "Unable to complete the response.",
+              error: error instanceof Error ? error.message : TEXT.failed,
             },
       );
     } finally {

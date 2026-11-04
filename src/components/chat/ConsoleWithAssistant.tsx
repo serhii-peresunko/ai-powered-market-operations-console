@@ -3,6 +3,7 @@ import { RiSparklingLine } from "@remixicon/react";
 import type { Dataset } from "@/data/types";
 import { MarketConsole } from "@/components/dashboard/MarketConsole";
 import { Assistant } from "./Assistant";
+import { CONSOLE_WITH_ASSISTANT_TEXT as TEXT } from "./copy";
 
 const UI = {
   insightNote: "insight-note",
@@ -18,10 +19,7 @@ export function ConsoleWithAssistant({ data }: { data: Dataset }) {
       assistantHint={
         <div className={UI.insightNote}>
           <RiSparklingLine size={17} aria-hidden="true" />
-          <span>
-            Have a question about a market? Explore the evidence with the
-            assistant.
-          </span>
+          <span>{TEXT.hint}</span>
         </div>
       }
     />
