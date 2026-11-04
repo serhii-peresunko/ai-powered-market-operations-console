@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import "./console.css";
-import "./dashboard.css";
-import "./assistant.css";
+import "@/shared/styles.css";
+import "./_components/workspace.css";
+import "@/features/dashboard/styles.css";
+import "@/features/alerts/styles.css";
+import "@/features/assistant/styles.css";
 import { APP_TEXT } from "./copy";
 
 const geistSans = Geist({
