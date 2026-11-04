@@ -1,7 +1,7 @@
 import { MAX_QUESTION_LENGTH } from "@/lib/chat";
 // Fixture-backed SSE endpoint. No LLM or external service is called.
 import { pickFixture } from "./fixtures";
-import type { ChatEvent } from "./types";
+import { type ChatEvent, ANSWER_KIND, CHAT_EVENT_TYPE } from "./types";
 
 export async function POST(req: Request) {
   let body: unknown;
@@ -38,10 +38,10 @@ export async function POST(req: Request) {
         controller.close();
         return;
       }
-      if (fixture.kind === "error") {
+      if (fixture.kind === ANSWER_KIND.ERROR) {
         controller.enqueue(
           encode({
-            type: "error",
+            type: CHAT_EVENT_TYPE.ERROR,
             message: fixture.error ?? "Something went wrong.",
           }),
         );
@@ -55,11 +55,13 @@ export async function POST(req: Request) {
           controller.close();
           return;
         }
-        controller.enqueue(encode({ type: "token", value: tokens[index++] }));
+        controller.enqueue(
+          encode({ type: CHAT_EVENT_TYPE.TOKEN, value: tokens[index++] }),
+        );
       } else {
         controller.enqueue(
           encode({
-            type: "done",
+            type: CHAT_EVENT_TYPE.DONE,
             kind: fixture.kind,
             citations: fixture.answer.citations,
             confidence: fixture.answer.confidence,

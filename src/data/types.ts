@@ -1,6 +1,30 @@
-export type Status = "on_track" | "at_risk" | "off_track";
-export type Confidence = "high" | "medium" | "low";
-export type AnswerKind = "normal" | "low_confidence" | "abstain" | "error";
+export const MARKET_STATUS = {
+  ON_TRACK: "on_track",
+  AT_RISK: "at_risk",
+  OFF_TRACK: "off_track",
+} as const;
+export type Status = (typeof MARKET_STATUS)[keyof typeof MARKET_STATUS];
+
+export const CONFIDENCE = {
+  HIGH: "high",
+  MEDIUM: "medium",
+  LOW: "low",
+} as const;
+export type Confidence = (typeof CONFIDENCE)[keyof typeof CONFIDENCE];
+
+export const ANSWER_KIND = {
+  NORMAL: "normal",
+  LOW_CONFIDENCE: "low_confidence",
+  ABSTAIN: "abstain",
+  ERROR: "error",
+} as const;
+export type AnswerKind = (typeof ANSWER_KIND)[keyof typeof ANSWER_KIND];
+
+export const CHAT_EVENT_TYPE = {
+  TOKEN: "token",
+  DONE: "done",
+  ERROR: "error",
+} as const;
 
 export interface Citation {
   marketId?: string;
@@ -58,28 +82,36 @@ export interface Fixture {
 }
 
 export type ChatEvent =
-  | { type: "token"; value: string }
+  | { type: typeof CHAT_EVENT_TYPE.TOKEN; value: string }
   | {
-      type: "done";
+      type: typeof CHAT_EVENT_TYPE.DONE;
       kind: AnswerKind;
       citations: Citation[];
       confidence: Confidence;
     }
-  | { type: "error"; message: string };
+  | { type: typeof CHAT_EVENT_TYPE.ERROR; message: string };
 
 export function isStatus(value: unknown): value is Status {
-  return value === "on_track" || value === "at_risk" || value === "off_track";
+  return (
+    value === MARKET_STATUS.ON_TRACK ||
+    value === MARKET_STATUS.AT_RISK ||
+    value === MARKET_STATUS.OFF_TRACK
+  );
 }
 
 export function isConfidence(value: unknown): value is Confidence {
-  return value === "high" || value === "medium" || value === "low";
+  return (
+    value === CONFIDENCE.HIGH ||
+    value === CONFIDENCE.MEDIUM ||
+    value === CONFIDENCE.LOW
+  );
 }
 
 export function isAnswerKind(value: unknown): value is AnswerKind {
   return (
-    value === "normal" ||
-    value === "low_confidence" ||
-    value === "abstain" ||
-    value === "error"
+    value === ANSWER_KIND.NORMAL ||
+    value === ANSWER_KIND.LOW_CONFIDENCE ||
+    value === ANSWER_KIND.ABSTAIN ||
+    value === ANSWER_KIND.ERROR
   );
 }

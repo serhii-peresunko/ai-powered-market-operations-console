@@ -1,6 +1,10 @@
 import { RiSparklingLine } from "@remixicon/react";
 import { Evidence } from "./Evidence";
-import type { AssistantContext, ChatTurn } from "./types";
+import {
+  type AssistantContext,
+  type ChatTurn,
+  CHAT_TURN_STATUS,
+} from "./types";
 
 const UI = {
   conversation: "conversation",
@@ -45,16 +49,16 @@ export function Conversation({
             </span>
             <p className={UI.answerText}>
               {turn.text ||
-                (turn.status === "streaming"
+                (turn.status === CHAT_TURN_STATUS.STREAMING
                   ? "Reading the evidence…"
                   : "No answer received.")}
             </p>
-            {turn.status === "streaming" && (
+            {turn.status === CHAT_TURN_STATUS.STREAMING && (
               <p className={UI.generationStatus}>
                 Generating… Evidence and confidence pending.
               </p>
             )}
-            {turn.status === "complete" && turn.completion && (
+            {turn.status === CHAT_TURN_STATUS.COMPLETE && turn.completion && (
               <Evidence
                 data={data}
                 view={view}
@@ -62,17 +66,18 @@ export function Conversation({
                 onNavigate={onNavigate}
               />
             )}
-            {turn.status === "stopped" && (
+            {turn.status === CHAT_TURN_STATUS.STOPPED && (
               <p className={UI.notice}>
                 Stopped · Partial answer, not verified.
               </p>
             )}
-            {turn.status === "error" && (
+            {turn.status === CHAT_TURN_STATUS.ERROR && (
               <p className={UI.errorNotice} role="alert">
                 {turn.error}
               </p>
             )}
-            {(turn.status === "error" || turn.status === "stopped") && (
+            {(turn.status === CHAT_TURN_STATUS.ERROR ||
+              turn.status === CHAT_TURN_STATUS.STOPPED) && (
               <button
                 className={UI.textButton}
                 disabled={busy}

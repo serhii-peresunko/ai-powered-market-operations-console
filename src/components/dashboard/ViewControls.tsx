@@ -1,7 +1,9 @@
 "use client";
 import type { DashboardProps } from "./types";
-import { isStatus } from "@/data/types";
+import { isStatus, MARKET_STATUS } from "@/data/types";
 import { periodLabel } from "@/lib/format";
+import { DASHBOARD_MODE } from "@/lib/view";
+import { ALL_STATUSES } from "@/lib/metrics";
 
 const UI = {
   viewControls: "view-controls",
@@ -77,21 +79,21 @@ export function ViewControls({ data, view, update }: DashboardProps) {
           ))}
         </select>
       </label>
-      {view.mode === "analyst" && (
+      {view.mode === DASHBOARD_MODE.ANALYST && (
         <label>
           Latest source status
           <select
             value={view.status}
             onChange={(event) => {
               const status = event.target.value;
-              if (status === "all" || isStatus(status))
+              if (status === ALL_STATUSES || isStatus(status))
                 update({ status, market: undefined, product: undefined });
             }}
           >
-            <option value="all">All statuses</option>
-            <option value="on_track">On track</option>
-            <option value="at_risk">At risk</option>
-            <option value="off_track">Off track</option>
+            <option value={ALL_STATUSES}>All statuses</option>
+            <option value={MARKET_STATUS.ON_TRACK}>On track</option>
+            <option value={MARKET_STATUS.AT_RISK}>At risk</option>
+            <option value={MARKET_STATUS.OFF_TRACK}>Off track</option>
           </select>
         </label>
       )}
@@ -103,7 +105,7 @@ export function ViewControls({ data, view, update }: DashboardProps) {
             region: undefined,
             market: undefined,
             product: undefined,
-            status: "all",
+            status: ALL_STATUSES,
           })
         }
       >
